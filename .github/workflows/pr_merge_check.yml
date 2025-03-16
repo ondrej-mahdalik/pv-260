@@ -21,7 +21,11 @@ jobs:
           dotnet restore
 
       - name: Build Solution
-        run: dotnet build --no-restore --configuration Release
+        run: |
+          cd src
+          dotnet build --no-restore --configuration Release
         
       - name: Run Unit Tests
-        run: dotnet test --no-build --configuration Release
+        run: |
+          cd src
+          dotnet test --no-build --configuration Release
