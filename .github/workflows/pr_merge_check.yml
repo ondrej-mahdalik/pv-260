@@ -6,7 +6,7 @@ on:
 
 jobs:
   main:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-arm64-actions-runner
     steps:
       - uses: actions/checkout@v4
 
