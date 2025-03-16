@@ -1,8 +1,49 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{EC56948D-EBF2-40BC-A0AB-FFA82ED302E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{9E4175A2-27B2-42C5-A68C-90C98679C3F4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PV260.Client.ConsoleApp", "PV260.Client.ConsoleApp\PV260.Client.ConsoleApp.csproj", "{B3FD463E-88C6-4D5B-B9ED-D7EC1344A001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PV260.Client.Tests", "PV260.Client.Tests\PV260.Client.Tests.csproj", "{B753C85E-E112-41E1-931C-8BD01C10671D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PV260.API.App", "PV260.API.App\PV260.API.App.csproj", "{B127BE50-6E02-4BBA-A701-18137A6408A4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D247CB08-A42E-4C7C-AAA6-0EEE2ABAE575}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PV260.API.Tests", "PV260.API.Tests\PV260.API.Tests.csproj", "{13131EC1-C891-4990-9C61-0FCD9BD7AE61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B3FD463E-88C6-4D5B-B9ED-D7EC1344A001} = {9E4175A2-27B2-42C5-A68C-90C98679C3F4}
+		{B753C85E-E112-41E1-931C-8BD01C10671D} = {9E4175A2-27B2-42C5-A68C-90C98679C3F4}
+		{B127BE50-6E02-4BBA-A701-18137A6408A4} = {EC56948D-EBF2-40BC-A0AB-FFA82ED302E6}
+		{13131EC1-C891-4990-9C61-0FCD9BD7AE61} = {EC56948D-EBF2-40BC-A0AB-FFA82ED302E6}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B3FD463E-88C6-4D5B-B9ED-D7EC1344A001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3FD463E-88C6-4D5B-B9ED-D7EC1344A001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3FD463E-88C6-4D5B-B9ED-D7EC1344A001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3FD463E-88C6-4D5B-B9ED-D7EC1344A001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B753C85E-E112-41E1-931C-8BD01C10671D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B753C85E-E112-41E1-931C-8BD01C10671D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B753C85E-E112-41E1-931C-8BD01C10671D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B753C85E-E112-41E1-931C-8BD01C10671D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B127BE50-6E02-4BBA-A701-18137A6408A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B127BE50-6E02-4BBA-A701-18137A6408A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B127BE50-6E02-4BBA-A701-18137A6408A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B127BE50-6E02-4BBA-A701-18137A6408A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13131EC1-C891-4990-9C61-0FCD9BD7AE61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13131EC1-C891-4990-9C61-0FCD9BD7AE61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13131EC1-C891-4990-9C61-0FCD9BD7AE61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13131EC1-C891-4990-9C61-0FCD9BD7AE61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,6 @@
+@PV260.API.App_HostAddress = http://localhost:5026
+
+GET {{PV260.API.App_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
