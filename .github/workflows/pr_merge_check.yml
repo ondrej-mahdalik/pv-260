@@ -1,0 +1,33 @@
+name: PR Merge Check
+
+on:
+  pull_request:
+    branches: main
+
+jobs:
+  main:
+    runs-on: self-hosted
+    env:
+      DOTNET_INSTALL_DIR: "~/dotnet"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore Dependencies
+        run: |
+          cd src
+          dotnet restore
+
+      - name: Build Solution
+        run: |
+          cd src
+          dotnet build --no-restore --configuration Release
+        
+      - name: Run Unit Tests
+        run: |
+          cd src
+          dotnet test --no-build --configuration Release
