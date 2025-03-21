@@ -10,3 +10,6 @@ You can view the detailed process models and event storming diagrams in [Figma](
 The user stories have been meticulously created and organized in [Jira](https://pv260.atlassian.net/jira/software/projects/IN/boards/1) for ease of tracking and development. To access the Jira you need to use account with email login@mail.muni.cz while replacing the login with your own.
 
 Each of us voted on story points to estimate the effort for each user story. The majority of us voted similarly on each of the tasks.
+
+## Git Conventions
+When working on a story, add it's key to the branch name and commit message so that it can be linked with Jira. Also include the Jira key in the ull request name.
