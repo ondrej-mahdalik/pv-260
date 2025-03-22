@@ -1,0 +1,67 @@
+name: Publish Binaries
+
+on:
+  push:
+    branches: main
+  workflow_dispatch:
+
+jobs:
+  client:
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - target: linux-x64
+          - target: win-x64
+          - target: osx-x64
+
+    runs-on: self-hosted
+    env:
+      DOTNET_INSTALL_DIR: "~/dotnet"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish Console Client
+        run: |
+          cd src/PV260.Client.ConsoleApp
+          dotnet publish "PV260.Client.ConsoleApp.csproj" -r ${{matrix.board.target}} -p:PublishSingleFile=true -p:RuntimeIdentifierOverride=${{ matrix.board.target }} -c Release -o publish
+
+      - name: Add target platform to executable name
+        run: |
+          if [[ "${{ matrix.board.target }}" == *"win-x64"* ]]; then
+            mv src/PV260.Client.ConsoleApp/publish/PV260.Client.ConsoleApp.exe src/PV260.Client.ConsoleApp/publish/PV260.Client.ConsoleApp-${{ matrix.board.target }}.exe
+          else
+            mv src/PV260.Client.ConsoleApp/publish/PV260.Client.ConsoleApp src/PV260.Client.ConsoleApp/publish/PV260.Client.ConsoleApp-${{ matrix.board.target }}
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-bin-${{matrix.board.target}}
+          path: src/PV260.Client.ConsoleApp/publish/*
+
+  release:
+    runs-on: self-hosted
+    needs: [client]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: client-bin-*
+          path: ${{github.workspace}}/release
+          merge-multiple: true
+
+      - name: Create Dev Release
+        uses: "marvinpinto/action-automatic-releases@v1.2.1"
+        with:
+          repo_token: ${{secrets.PAT_TOKEN}}
+          title: "Latest Client Build - ${{ github.run_number }}"
+          automatic_release_tag: "latest"
+          files: "release/*"
