@@ -8,6 +8,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ondrej-mahdalik/pv-260:main
+  STAGING_CONTAINER_NAME: pv260-staging
+  STAGING_CONTAINER_PORT: 5300
 
 jobs:
   build:
@@ -71,6 +73,6 @@ jobs:
           script: |
             docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            docker stop pv260-staging || true
-            docker rm pv260-staging || true
-            docker run -d -p 5300:8080 --name pv260-staging ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            docker stop ${{ env.STAGING_CONTAINER_NAME }} || true
+            docker rm ${{ env.STAGING_CONTAINER_NAME }} || true
+            docker run -d -p ${{ env.STAGING_CONTAINER_PORT }}:8080 --name ${{ env.STAGING_CONTAINER_NAME }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
