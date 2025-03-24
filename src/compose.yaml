@@ -3,4 +3,4 @@
     image: pv260.api.app
     build:
       context: .
-      dockerfile: PV260.API.App/Dockerfile
+      dockerfile: Dockerfile
