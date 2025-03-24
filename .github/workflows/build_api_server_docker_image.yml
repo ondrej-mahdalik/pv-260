@@ -1,4 +1,4 @@
-name: Build API Server Docker image and deploy it to staging server
+name: Build API Server Docker image and deploy it
 
 on:
   push:
@@ -7,12 +7,15 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ondrej-mahdalik/pv-260:main
-  STAGING_CONTAINER_NAME: pv260-staging
-  STAGING_CONTAINER_PORT: 5300
+  REGISTRY_USER: ${{ github.actor }}
+  REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
+    strategy:
+      matrix:
+        environment: [staging, production]
+    environment: ${{ matrix.environment }}
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -21,18 +24,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Extract metadata (tags, labels) for Docker
+    - name: Extract metadata for Docker
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        images: ${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}
 
     - name: Log in to the Container registry
       uses: docker/login-action@v3
       with:
         registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        username: ${{ env.REGISTRY_USER }}
+        password: ${{ env.REGISTRY_PASSWORD }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -51,28 +54,23 @@ jobs:
         tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         labels: ${{ steps.meta.outputs.labels }}
 
-  deploy-staging:
+  deploy:
     needs: build
+    strategy:
+      matrix:
+        environment: [staging, production]
+    environment: ${{ matrix.environment }}
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Deploy the package on the staging server
+      - name: Deploy the package on the ${{ matrix.environment }} server
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.STAGING_SSH_HOST }}
-          username: ${{ secrets.STAGING_SSH_USER }}
-          password: ${{ secrets.STAGING_SSH_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            docker stop ${{ env.STAGING_CONTAINER_NAME }} || true
-            docker rm ${{ env.STAGING_CONTAINER_NAME }} || true
-            docker run -d -p ${{ env.STAGING_CONTAINER_PORT }}:8080 --name ${{ env.STAGING_CONTAINER_NAME }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            docker login ${{ env.REGISTRY }} -u ${{ env.REGISTRY_USER }} -p ${{ env.REGISTRY_PASSWORD }}
+            docker pull ${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}
+            docker stop ${{ vars.CONTAINER_NAME }} || true
+            docker rm ${{ vars.CONTAINER_NAME }} || true
+            docker run -d -p ${{ vars.CONTAINER_PORT }}:8080 --name ${{ vars.CONTAINER_NAME }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
