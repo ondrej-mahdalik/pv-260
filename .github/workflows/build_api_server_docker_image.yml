@@ -1,4 +1,4 @@
-name: Build and push API server Docker image
+name: Build API Server Docker image and deploy it to staging server
 
 on:
   push:
