@@ -1,8 +1,8 @@
-name: Build API Server Docker image and deploy it
+name: Build API Server Docker image and deploy it on Production server
 
 on:
   push:
-    branches: main
+    tags: v*
   workflow_dispatch:
 
 env:
@@ -12,10 +12,7 @@ env:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        environment: [staging, production]
-    environment: ${{ matrix.environment }}
+    environment: production
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -51,18 +48,15 @@ jobs:
         context: ./src
         file: ./src/Dockerfile
         push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: ${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}
         labels: ${{ steps.meta.outputs.labels }}
 
   deploy:
     needs: build
-    strategy:
-      matrix:
-        environment: [staging, production]
-    environment: ${{ matrix.environment }}
+    environment: production
     runs-on: self-hosted
     steps:
-      - name: Deploy the package on the ${{ matrix.environment }} server
+      - name: Deploy the package on the Production server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -73,4 +67,4 @@ jobs:
             docker pull ${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}
             docker stop ${{ vars.CONTAINER_NAME }} || true
             docker rm ${{ vars.CONTAINER_NAME }} || true
-            docker run -d -p ${{ vars.CONTAINER_PORT }}:8080 --name ${{ vars.CONTAINER_NAME }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            docker run -d -p ${{ vars.CONTAINER_PORT }}:8080 --name ${{ vars.CONTAINER_NAME }} ${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}
