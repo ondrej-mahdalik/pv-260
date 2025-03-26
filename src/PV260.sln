@@ -10,11 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PV260.Client.Tests", "PV260
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PV260.API.App", "PV260.API.App\PV260.API.App.csproj", "{B127BE50-6E02-4BBA-A701-18137A6408A4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D247CB08-A42E-4C7C-AAA6-0EEE2ABAE575}"
-	ProjectSection(SolutionItems) = preProject
-		compose.yaml = compose.yaml
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PV260.API.Tests", "PV260.API.Tests\PV260.API.Tests.csproj", "{13131EC1-C891-4990-9C61-0FCD9BD7AE61}"
 EndProject
 Global
