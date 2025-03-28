@@ -1,0 +1,32 @@
+﻿networks:
+  pv260.production:
+    driver: bridge
+
+services:
+  pv260.api.db.production:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: pv260.api.db.production
+    networks:
+      - pv260.production
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_SA_PASSWORD}
+      - MSSQL_PID=Express
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  pv260.api.app.production:
+    image: ${IMAGE_NAME}
+    container_name: pv260.api.app.production
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+    depends_on:
+      - pv260.api.db.production
+    networks:
+      - pv260.production
+    ports:
+      - "${API_PORT}:8080"
+
+volumes:
+  mssql_data:
+    

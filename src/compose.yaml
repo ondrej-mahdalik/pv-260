@@ -1,6 +1,0 @@
-﻿services:
-  pv260.api.app:
-    image: pv260.api.app
-    build:
-      context: .
-      dockerfile: Dockerfile

@@ -45,8 +45,8 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         platforms: linux/amd64
-        context: ./src
-        file: ./src/Dockerfile
+        context: ./src/
+        file: ./src/PV260.API.App/Dockerfile
         push: true
         tags: ${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -54,17 +54,42 @@ jobs:
   deploy:
     needs: build
     environment: production
-    runs-on: self-hosted
+    runs-on: self-hosted-docker
     steps:
-      - name: Deploy the package on the Production server
-        uses: appleboy/ssh-action@master
+      - uses: actions/checkout@v4
+
+      - name: Create .env file on the Production server
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
+            mkdir -p ~/pv260-production
+            rm -f ~/pv260-production/.env
+
+            echo "API_PORT=${{ vars.API_PORT }}" >> ~/pv260-production/.env
+            echo "IMAGE_NAME=${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}" >> ~/pv260-production/.env
+            echo "DB_SA_PASSWORD=${{ secrets.DB_SA_PASSWORD }}" >> ~/pv260-production/.env
+
+      - name: Copy docker-compose file to the Production server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: docker-compose.production.yaml
+          target: ~/pv260-production
+
+      - name: Deploy the package on the Production server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd ~/pv260-production
             docker login ${{ env.REGISTRY }} -u ${{ env.REGISTRY_USER }} -p ${{ env.REGISTRY_PASSWORD }}
-            docker pull ${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}
-            docker stop ${{ vars.CONTAINER_NAME }} || true
-            docker rm ${{ vars.CONTAINER_NAME }} || true
-            docker run -d -p ${{ vars.CONTAINER_PORT }}:8080 --name ${{ vars.CONTAINER_NAME }} ${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}
+            docker compose -f docker-compose.production.yaml down
+            docker compose -f docker-compose.production.yaml pull
+            docker compose -f docker-compose.production.yaml up -d

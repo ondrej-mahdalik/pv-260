@@ -1,0 +1,35 @@
+﻿networks:
+  pv260.dev:
+    driver: bridge
+
+services:
+  pv260.api.db.dev:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: pv260.api.db.dev
+    networks:
+      - pv260.dev
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Password1
+      - MSSQL_PID=Express
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  pv260.api.app.dev:
+    image: pv260.api.app.dev
+    container_name: pv260.api.app.dev
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+    depends_on:
+      - pv260.api.db.dev
+    networks:
+      - pv260.dev
+    ports:
+      - "5000:8080"
+    build:
+      context: ./src
+      dockerfile: PV260.API.App/Dockerfile
+
+volumes:
+  mssql_data:
+    
