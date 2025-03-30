@@ -16,5 +16,9 @@
         <Link>.dockerignore</Link>
       </Content>
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PV260.Common\PV260.Common.csproj" />
+    </ItemGroup>
     
 </Project>
