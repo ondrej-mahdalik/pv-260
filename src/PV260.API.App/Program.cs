@@ -1,8 +1,17 @@
+using PV260.API.BL.Extensions;
+using PV260.API.DAL.Extensions;
+using PV260.API.DAL.Migrator;
+using PV260.Common.Models;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<SettingsModel>(builder.Configuration.GetSection("ReportSettings"));
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDBlServices();
+builder.Services.AddDalServices(builder.Configuration);
 
 var app = builder.Build();
 
@@ -13,8 +22,13 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     app.UseSwaggerUI();
 }
 
+app.Services.AddScheduledTasks();
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+// Set up the database
+app.Services.GetRequiredService<IDbMigrator>().Migrate();
 
 app.Run();

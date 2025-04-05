@@ -7,6 +7,8 @@ namespace PV260.API.App.Controllers;
 public class HealthCheckController : ControllerBase
 {
     [HttpGet]
+    [EndpointSummary("Health Check")]
+    [EndpointDescription("A dumb endpoint to check if the API is running and responding")]
     public ActionResult<string> Get()
     {
         return Ok("Healthy");

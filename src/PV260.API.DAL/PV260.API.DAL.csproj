@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PV260.Common\PV260.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Migrations\20250411143720_Initial.Designer.cs" />
+    </ItemGroup>
+
+</Project>

@@ -1,22 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using PV260.Common.Models;
 
 namespace PV260.API.App.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ConfigurationController : ControllerBase
+public class ConfigurationController(IOptions<SettingsModel> settings) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<SettingsModel>> GetSettings()
+    [EndpointSummary("Get application settings")]
+    [EndpointDescription("Returns the application settings")]
+    public ActionResult<SettingsModel> GetSettings()
     {
-        return Ok(new SettingsModel("0 0 * * *", 30, true));
-    }
-    
-    [HttpPost]
-    public async Task<ActionResult<SettingsModel>> UpdateSettings([FromBody] SettingsModel settings)
-    {
-        // Here you would typically update the settings in a database or configuration file
-        return Ok(settings);
+        return Ok(settings.Value);
     }
 }

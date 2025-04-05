@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Coravel" Version="6.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.4" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PV260.API.DAL\PV260.API.DAL.csproj" />
+      <ProjectReference Include="..\PV260.Common\PV260.Common.csproj" />
+    </ItemGroup>
+
+</Project>
