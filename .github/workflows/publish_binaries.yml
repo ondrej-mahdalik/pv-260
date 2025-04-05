@@ -44,6 +44,7 @@ jobs:
         with:
           name: client-bin-${{ matrix.board.target }}
           path: src/PV260.Client.ConsoleApp/publish/*
+          retention-days: 1
 
   server:
     strategy:
@@ -85,6 +86,7 @@ jobs:
         with:
           name: server-bin-${{ matrix.board.target }}
           path: src/PV260.API.App/publish/*.zip
+          retention-days: 1
 
   release:
     runs-on: self-hosted
