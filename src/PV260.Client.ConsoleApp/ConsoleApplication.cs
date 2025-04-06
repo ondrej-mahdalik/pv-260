@@ -94,10 +94,6 @@ internal class ConsoleApplication(
                 {
                     _navigationService.Pop();
                 }
-                else
-                {
-                    _running = false;
-                }
 
                 break;
             case ConsoleKey.Escape:
