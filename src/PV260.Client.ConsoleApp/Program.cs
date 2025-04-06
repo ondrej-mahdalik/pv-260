@@ -1,14 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using PV260.Client.BL;
-using System;
+using PV260.Client.ConsoleApp;
+using PV260.Client.ConsoleApp.Components;
+using PV260.Client.ConsoleApp.Components.Interfaces;
 
 var host = Host.CreateDefaultBuilder(args)
-    .ConfigureAppConfiguration((hostingContext, config) =>
-    {
-        config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-    })
+    .ConfigureAppConfiguration((hostingContext, config) => { config.AddJsonFile("appsettings.json", true, true); })
+    .ConfigureLogging(logging => logging.ClearProviders())
     .ConfigureServices((context, services) =>
     {
         var baseAddress = context.Configuration["ApiSettings:BaseAddress"];
@@ -16,15 +17,20 @@ var host = Host.CreateDefaultBuilder(args)
         {
             throw new ArgumentNullException(nameof(baseAddress), "Base address cannot be null or empty.");
         }
-        services.AddHttpClient<IApiClient, ApiClient>(client =>
-        {
-            client.BaseAddress = new Uri(baseAddress);
-        });
+
+        services.AddHttpClient<IApiClient, ApiClient>(client => { client.BaseAddress = new Uri(baseAddress); });
+
+        services.AddSingleton<IHeaderComponent, HeaderComponent>();
+        services.AddSingleton<INavbarComponent, NavbarComponent>();
+        services.AddSingleton<IFooterComponent, FooterComponent>();
+        services.AddSingleton<IContentRouter, DefaultContentRouter>();
+        services.AddSingleton<ILayoutBuilder, LayoutBuilder>();
+        services.AddSingleton<ConsoleApplication>();
     })
     .Build();
 
-var apiClient = host.Services.GetRequiredService<IApiClient>();
+var app = host.Services.GetRequiredService<ConsoleApplication>();
 
-Console.WriteLine("Hello World!");
+_ = host.RunAsync();
 
-await host.RunAsync();
+app.Run();
