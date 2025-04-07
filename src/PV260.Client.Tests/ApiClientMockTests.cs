@@ -23,10 +23,11 @@ public class ApiClientMockTests
     }
 
     [Fact]
-    public async Task GetReportByIdAsync_ThrowsException_WhenReportDoesNotExist()
+    public async Task GetReportByIdAsync_ReturnsNull_WhenReportDoesNotExist()
     {
         var client = new ApiClientMock();
-        await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetReportByIdAsync(Guid.NewGuid()));
+        var report = await client.GetReportByIdAsync(Guid.NewGuid());
+        Assert.Null(report);
     }
 
     [Fact]

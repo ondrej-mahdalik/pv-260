@@ -2,27 +2,26 @@
 using PV260.Client.BL;
 
 namespace PV260.Client.Mock;
-
 public class ApiClientMock : IApiClient
 {
     private readonly List<ReportModel> _reports = new();
-    private SettingsModel _settings = new ("59 22 * * 0", 7, true);
+    private SettingsModel? _settings = new ("59 22 * * 0", 7, true);
 
     public Task<IEnumerable<ReportModel>> GetAllReportsAsync()
     {
         return Task.FromResult<IEnumerable<ReportModel>>(_reports);
     }
 
-    public Task<ReportModel> GetReportByIdAsync(Guid id)
+    public Task<ReportModel?> GetReportByIdAsync(Guid id)
     {
         var report = _reports.FirstOrDefault(r => r.Id == id);
-        return Task.FromResult(report ?? throw new InvalidOperationException("Report not found"));
+        return Task.FromResult(report);
     }
 
-    public Task<ReportModel> GetLatestReportAsync()
+    public Task<ReportModel?> GetLatestReportAsync()
     {
         var report = _reports.OrderByDescending(r => r.CreatedAt).FirstOrDefault();
-        return Task.FromResult(report ?? throw new InvalidOperationException("Latest report not found"));
+        return Task.FromResult(report);
     }
 
     public Task<ReportModel> GenerateNewReportAsync()
@@ -53,7 +52,7 @@ public class ApiClientMock : IApiClient
         return Task.CompletedTask;
     }
 
-    public Task<SettingsModel> GetSettingsAsync()
+    public Task<SettingsModel?> GetSettingsAsync()
     {
         return Task.FromResult(_settings);
     }
