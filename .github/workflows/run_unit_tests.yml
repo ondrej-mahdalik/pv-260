@@ -22,19 +22,19 @@ jobs:
           cd src
           dotnet tool install --global Microsoft.VisualStudio.SlnGen.Tool
           export PATH="$PATH:$HOME/.dotnet/tools"
-          slngen dirs.proj
+          slngen dirs.proj -o PV260.sln
 
       - name: Restore Dependencies
         run: |
           cd src
-          dotnet restore
+          dotnet restore PV260.sln
 
       - name: Build Solution
         run: |
           cd src
-          dotnet build --no-restore --configuration Release
+          dotnet build PV260.sln --no-restore --configuration Release
         
       - name: Run Unit Tests
         run: |
           cd src
-          dotnet test --no-build --configuration Release
+          dotnet test PV260.sln --no-build --configuration Release
