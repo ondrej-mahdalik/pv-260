@@ -17,13 +17,11 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
       - name: Install slngen and generate solution file
         run: |
           cd src
-          dotnet tool install --global slngen
+          dotnet tool install --global Microsoft.VisualStudio.SlnGen.Tool
+          export PATH="$PATH:$HOME/.dotnet/tools"
           slngen dirs.proj
 
       - name: Restore Dependencies
