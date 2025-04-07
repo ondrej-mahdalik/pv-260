@@ -51,6 +51,12 @@ internal class ConsoleApplication(
 
     private void DelegateNavigation(IRenderableComponent component, ConsoleKeyInfo key)
     {
+        if (key.Key == ConsoleKey.Escape)
+        {
+            _running = false;
+            return;
+        }
+
         if (component is INavigationComponent navComponent)
         {
             navComponent.Navigate(key.Key);
@@ -95,9 +101,6 @@ internal class ConsoleApplication(
                     _navigationService.Pop();
                 }
 
-                break;
-            case ConsoleKey.Escape:
-                _running = false;
                 break;
         }
     }
