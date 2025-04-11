@@ -17,28 +17,28 @@ namespace PV260.Client.BL
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<ReportModel>> GetAllReportsAsync()
+        public async Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
         {
-            return await _httpClient.GetFromJsonAsync<IEnumerable<ReportModel>>("Report") ?? new List<ReportModel>();
+            return await _httpClient.GetFromJsonAsync<IEnumerable<ReportListModel>>("Report") ?? new List<ReportListModel>();
         }
 
-        public async Task<ReportModel> GetReportByIdAsync(Guid id)
+        public async Task<ReportListModel> GetReportByIdAsync(Guid id)
         {
-            var report = await _httpClient.GetFromJsonAsync<ReportModel>($"Report/{id}");
+            var report = await _httpClient.GetFromJsonAsync<ReportListModel>($"Report/{id}");
             return report ?? throw new InvalidOperationException("Report not found");
         }
 
-        public async Task<ReportModel> GetLatestReportAsync()
+        public async Task<ReportListModel> GetLatestReportAsync()
         {
-            var report = await _httpClient.GetFromJsonAsync<ReportModel>("Report/latest");
+            var report = await _httpClient.GetFromJsonAsync<ReportListModel>("Report/latest");
             return report ?? throw new InvalidOperationException("Latest report not found");
         }
 
-        public async Task<ReportModel> GenerateNewReportAsync()
+        public async Task<ReportListModel> GenerateNewReportAsync()
         {
             var response = await _httpClient.PostAsJsonAsync("Report/generate", new { });
             response.EnsureSuccessStatusCode();
-            var report = await response.Content.ReadFromJsonAsync<ReportModel>();
+            var report = await response.Content.ReadFromJsonAsync<ReportListModel>();
             return report ?? throw new InvalidOperationException("Failed to generate new report");
         }
 
@@ -64,14 +64,6 @@ namespace PV260.Client.BL
         {
             var settings = await _httpClient.GetFromJsonAsync<SettingsModel>("Configuration");
             return settings ?? throw new InvalidOperationException("Settings not found");
-        }
-
-        public async Task<SettingsModel> UpdateSettingsAsync(SettingsModel settings)
-        {
-            var response = await _httpClient.PostAsJsonAsync("Configuration", settings);
-            response.EnsureSuccessStatusCode();
-            var updatedSettings = await response.Content.ReadFromJsonAsync<SettingsModel>();
-            return updatedSettings ?? throw new InvalidOperationException("Failed to update settings");
         }
     }
 }

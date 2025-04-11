@@ -25,8 +25,10 @@
 
     <ItemGroup>
         <Using Include="Xunit" />
+    </ItemGroup>
+    
+    <ItemGroup>
         <ProjectReference Include="..\PV260.Client.ConsoleApp\PV260.Client.ConsoleApp.csproj" />
-		<ProjectReference Include="..\PV260.Common\PV260.Common.csproj" />
     </ItemGroup>
 
 </Project>

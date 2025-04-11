@@ -11,27 +11,27 @@ namespace PV260.API.App.Controllers;
 public class ReportController(ReportFacade reportFacade) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ReportModel>>> GetAllReports()
+    public async Task<ActionResult<IEnumerable<ReportListModel>>> GetAllReports()
     {
-        return Ok(new List<ReportModel>());
+        return Ok(new List<ReportListModel>());
     }
     
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<ReportModel>> GetReportById(Guid id)
+    public async Task<ActionResult<ReportDetailModel>> GetReportById(Guid id)
     {
-        return Ok(new ReportModel());
+        return Ok(new ReportDetailModel { Name = string.Empty, CreatedAt = DateTime.Now });
     }
     
     [HttpGet("latest")]
-    public async Task<ActionResult<ReportModel>> GetLatestReport()
+    public async Task<ActionResult<ReportDetailModel>> GetLatestReport()
     {
-        return Ok(new ReportModel());
+        return Ok(new ReportDetailModel { Name = string.Empty, CreatedAt = DateTime.Now });
     }
     
     [HttpPost("generate")]
-    public async Task<ActionResult<ReportModel>> GenerateNewReport()
+    public async Task<ActionResult<ReportDetailModel>> GenerateNewReport()
     {
-        return Ok(new ReportModel());
+        return Ok(new ReportDetailModel { Name = string.Empty, CreatedAt = DateTime.Now });
     }
     
     [HttpDelete("{id:guid}")]

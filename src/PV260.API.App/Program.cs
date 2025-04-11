@@ -1,5 +1,6 @@
 using PV260.API.BL.Extensions;
 using PV260.API.DAL.Extensions;
+using PV260.API.DAL.Migrator;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +20,13 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     app.UseSwaggerUI();
 }
 
+app.Services.AddScheduledTasks(app.Configuration);
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+// Set up the database
+app.Services.GetRequiredService<IDbMigrator>().Migrate();
 
 app.Run();

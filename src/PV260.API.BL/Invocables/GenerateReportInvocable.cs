@@ -1,0 +1,15 @@
+﻿using Coravel.Invocable;
+using PV260.API.BL.Facades;
+
+namespace PV260.API.BL.Invocables;
+
+public class GenerateReportInvocable(ReportFacade reportFacade) : IInvocable
+{
+    private readonly ReportFacade _reportFacade = reportFacade;
+    
+    public Task Invoke()
+    {
+        // TODO Trigger report generation in the report facade here once implemented
+        throw new NotImplementedException();
+    }
+}

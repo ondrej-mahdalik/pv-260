@@ -7,16 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Coravel" Version="6.0.2" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.3" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\PV260.API.DAL\PV260.API.DAL.csproj" />
       <ProjectReference Include="..\PV260.Common\PV260.Common.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Services\" />
     </ItemGroup>
 
 </Project>
