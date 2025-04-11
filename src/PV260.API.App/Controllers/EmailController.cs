@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PV260.API.BL.Facades;
 
 namespace PV260.API.App.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class EmailController : ControllerBase
+public class EmailController(IEmailFacade emailFacade) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<string>>> GetAllEmails()
@@ -28,5 +29,12 @@ public class EmailController : ControllerBase
     public async Task<ActionResult> DeleteAllEmails()
     {
         return NoContent();
+    }
+
+    [HttpPost("TEST")]
+    public async Task<ActionResult> SendTestEmail()
+    {
+        await emailFacade.TestEmailAsync();
+        return Ok();
     }
 }

@@ -3,6 +3,7 @@ using PV260.API.DAL.Extensions;
 using PV260.API.DAL.Migrator;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddUserSecrets<Program>();
 
 // Add services to the container.
 builder.Services.AddControllers();

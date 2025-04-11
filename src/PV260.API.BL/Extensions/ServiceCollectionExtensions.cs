@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using PV260.API.BL.Facades;
 using PV260.API.BL.Mappers;
+using PV260.API.BL.Services;
 using PV260.API.DAL.Entities;
 using PV260.Common.Models;
 
@@ -24,6 +25,10 @@ public static class ServiceCollectionExtensions
         
         // Facades
         serviceCollection.AddSingleton<IReportFacade, ReportFacade>();
+        serviceCollection.AddSingleton<IEmailFacade, EmailFacade>();
+        
+        // Services
+        serviceCollection.AddTransient<IEmailService, SendgridEmailService>();
         
         // Scheduling
         serviceCollection.AddScheduler();
