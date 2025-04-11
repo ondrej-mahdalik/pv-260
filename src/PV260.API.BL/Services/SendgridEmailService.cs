@@ -7,7 +7,7 @@ public class SendgridEmailService : IEmailService
 {
     private const string ReportEmailSenderEmailKey = "EmailConfiguration:ReportEmailSenderEmail";
     private const string ReportEmailSenderNameKey = "EmailConfiguration:ReportEmailSenderName";
-    private const string SendGridApiKey = "EmailConfiguration:SendGridApiKey";
+    private const string SendGridApiKey = "SendGridApiKey";
     
     private readonly SendGridClient _sendGridClient;
     private readonly string _senderEmail;

@@ -49,7 +49,6 @@ public class ReportController(ReportFacade reportFacade) : ControllerBase
     [HttpPost("{id:guid}/send")]
     public async Task<ActionResult> SendReport(Guid id)
     {
-        await reportFacade.SendReportToEmailAsync(id);
         return Ok();
     }
 }
