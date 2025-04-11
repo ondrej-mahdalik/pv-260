@@ -20,8 +20,7 @@ public class SendgridEmailService : IEmailService
         _senderEmail = configuration[ReportEmailSenderEmailKey] ??
                        throw new Exception($"Missing configuration key: {ReportEmailSenderEmailKey}");
         
-        _sendGridClient = new SendGridClient(configuration[SendGridApiKey]) 
-                          ?? throw new Exception("Missing SendGrid API key");
+        _sendGridClient = new SendGridClient(configuration[SendGridApiKey] ?? throw new Exception("Missing SendGrid API key"));
     }
 
     public Task SendEmailAsync(string to, string subject, string body)

@@ -22,6 +22,7 @@ services:
     environment:
       - DOTNET_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=pv260.api.db.dev;Database=PV260;User Id=sa;Password=Password1;TrustServerCertificate=True;
+      - SendGridApiKey=${SendGridApiKey}
     depends_on:
       - pv260.api.db.dev
     networks:

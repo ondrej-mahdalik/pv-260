@@ -402,3 +402,6 @@ FodyWeavers.xsd
 
 # Solution Files
 *.sln
+
+# Environment Variables
+*.env
