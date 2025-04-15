@@ -31,10 +31,21 @@ public class EmailController(IEmailFacade emailFacade) : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("TEST")]
-    public async Task<ActionResult> SendTestEmail()
+        
+    //TODO rename
+    [HttpPost("testSendSingle")]
+    public async Task<ActionResult> SendTestEmailSingle()
+    {
+        await emailFacade.TestEmailSingleAsync();
+        return Ok();
+    }
+
+    //TODO rename 
+    [HttpPost("testSendMultiple")]
+    public async Task<ActionResult> SendTestEmailMultiple()
     {
         await emailFacade.TestEmailAsync();
         return Ok();
     }
+
 }

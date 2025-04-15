@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace PV260.API.BL.Services;
 
@@ -25,11 +26,17 @@ public class SendgridEmailService : IEmailService
 
     public Task SendEmailAsync(string to, string subject, string body)
     {
-        throw new NotImplementedException();
+        var from = new EmailAddress(_senderEmail, _senderName);
+        var toEmail = new EmailAddress(to);
+        var msg = MailHelper.CreateSingleEmail(from, toEmail, subject, body, body);
+        return _sendGridClient.SendEmailAsync(msg);
     }
 
     public Task SendEmailAsync(IEnumerable<string> to, string subject, string body)
     {
-        throw new NotImplementedException();
+        var from = new EmailAddress(_senderEmail, _senderName);
+        var recipients = to.Select(email => new EmailAddress(email)).ToList();
+        var msg = MailHelper.CreateSingleEmailToMultipleRecipients(from, recipients, subject, body, body);
+        return _sendGridClient.SendEmailAsync(msg);
     }
 }

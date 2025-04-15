@@ -2,5 +2,7 @@
 
 public interface IEmailFacade
 {
+    //TODO rename 
     Task TestEmailAsync();
+    Task TestEmailSingleAsync(); 
 }
