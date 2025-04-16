@@ -27,7 +27,7 @@ public class ReportController(ReportFacade reportFacade) : ControllerBase
         if (report is null)
             return NotFound();
         
-        return Ok();
+        return Ok(report);
     }
     
     [HttpGet("latest")]
@@ -39,7 +39,7 @@ public class ReportController(ReportFacade reportFacade) : ControllerBase
         if (report is null)
             return NotFound();
         
-        return Ok();
+        return Ok(report);
     }
     
     [HttpPost("generate")]
