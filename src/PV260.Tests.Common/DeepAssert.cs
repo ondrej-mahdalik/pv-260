@@ -1,7 +1,7 @@
 ﻿using KellermanSoftware.CompareNetObjects;
 using Xunit.Sdk;
 
-namespace PV260.Common.Tests;
+namespace PV260.Tests.Common;
 
 /// <summary>
 /// Provides methods for deep comparison assertions in unit tests.

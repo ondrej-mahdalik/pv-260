@@ -29,7 +29,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\PV260.API.App\PV260.API.App.csproj"/>
-        <ProjectReference Include="..\PV260.Common.Tests\PV260.Common.Tests.csproj"/>
+        <ProjectReference Include="..\PV260.Tests.Common\PV260.Tests.Common.csproj" />
     </ItemGroup>
 
 </Project>
