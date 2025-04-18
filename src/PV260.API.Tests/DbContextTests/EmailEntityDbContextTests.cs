@@ -13,7 +13,7 @@ public class EmailEntityDbContextTests : DbContextTestBase
     public async Task AddEmailEntity()
     {
         // Arrange
-        var entity = new EmailEntity
+        var entity = new EmailRecipientEntity
         {
             EmailAddress = "test123@test.com",
             CreatedAt = new DateTime(2025, 4, 13, 2, 12, 22)
@@ -33,25 +33,22 @@ public class EmailEntityDbContextTests : DbContextTestBase
     public async Task AddEmailEntity_DuplicateEmail_Throws()
     {
         // Arrange
-        var duplicateEntity = EmailEntitySeeds.SeededEmailEntities.First() with
+        var duplicateEntity = EmailEntitySeeds.Entity1 with
         {
             Id = Guid.NewGuid(),
             CreatedAt = new DateTime(2025, 4, 13, 2, 12, 22)
         };
         
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            DbContextSut.Emails.Add(duplicateEntity);
-            await DbContextSut.SaveChangesAsync();
-        });
+        DbContextSut.Emails.Add(duplicateEntity);
+        await Assert.ThrowsAsync<DbUpdateException>(async () => await DbContextSut.SaveChangesAsync());
     }
 
     [Fact]
     public void AddEmailEntity_NullEmail_Throws()
     {
         // Arrange
-        var entity = new EmailEntity
+        var entity = new EmailRecipientEntity
         {
             EmailAddress = null!,
             CreatedAt = new DateTime(2025, 4, 13, 2, 12, 22)
@@ -65,7 +62,7 @@ public class EmailEntityDbContextTests : DbContextTestBase
     public async Task DeleteEmailEntity_DeletesExistingEntity()
     {
         // Arrange
-        var entityToDelete = EmailEntitySeeds.SeededEmailEntities.First();
+        var entityToDelete = EmailEntitySeeds.Entity1;
         
         // Act
         DbContextSut.Emails.Remove(entityToDelete);
@@ -76,7 +73,7 @@ public class EmailEntityDbContextTests : DbContextTestBase
     public async Task DeleteEmailEntity_NonExistentEntityThrows()
     {
         // Arrange
-        var entityToDelete = new EmailEntity
+        var entityToDelete = new EmailRecipientEntity
         {
             EmailAddress = "test123@test.com",
             CreatedAt = new DateTime(2025, 4, 13, 2, 12, 22)
@@ -84,9 +81,6 @@ public class EmailEntityDbContextTests : DbContextTestBase
         
         // Act & Assert
         DbContextSut.Emails.Remove(entityToDelete);
-        await Assert.ThrowsAnyAsync<DbUpdateConcurrencyException>(async () =>
-        {
-            await DbContextSut.SaveChangesAsync();
-        });
+        await Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () => await DbContextSut.SaveChangesAsync());
     }
 }

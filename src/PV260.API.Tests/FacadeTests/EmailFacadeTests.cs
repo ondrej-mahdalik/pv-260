@@ -9,8 +9,6 @@ namespace PV260.API.Tests.FacadeTests;
 [Collection("EmailFacadeTests")]
 public class EmailFacadeTests : FacadeTestBase
 {
-    
-    
     [Fact]
     public async Task GetAllEmailRecipientsAsync_ReturnsAllRecipients()
     {
@@ -19,9 +17,9 @@ public class EmailFacadeTests : FacadeTestBase
         var actualEmails = await EmailFacadeSut.GetAllEmailRecipientsAsync();
 
         // Assert
-        Assert.Equal(EmailEntitySeeds.SeededEmailEntities.Count, actualEmails.Count);
-        foreach (var expectedEmail in EmailRecipientModelSeeds)
-            DeepAssert.Contains(expectedEmail, actualEmails);
+        Assert.Equal(2, actualEmails.Count);
+        DeepAssert.Contains(EmailRecipientMapper.ToDetailModel(EmailEntitySeeds.Entity1), actualEmails);
+        DeepAssert.Contains(EmailRecipientMapper.ToDetailModel(EmailEntitySeeds.Entity2), actualEmails);
     }
 
     [Fact]
@@ -39,12 +37,12 @@ public class EmailFacadeTests : FacadeTestBase
 
         // Assert
         await using var uow = UnitOfWorkFactory.Create();
-        var repository = uow.GetRepository<EmailEntity>();
+        var repository = uow.GetRepository<EmailRecipientEntity>();
         var actualEmail = await repository.Get()
             .FirstOrDefaultAsync(e => e.EmailAddress == emailRecipientModelToAdd.EmailAddress);
 
         Assert.NotNull(actualEmail);
-        DeepAssert.Equal(emailRecipientModelToAdd, EmailMapper.ToDetailModel(actualEmail));
+        DeepAssert.Equal(emailRecipientModelToAdd, EmailRecipientMapper.ToDetailModel(actualEmail));
     }
 
     [Fact]
@@ -54,7 +52,7 @@ public class EmailFacadeTests : FacadeTestBase
         var emailRecipientModelToAdd = new EmailRecipientModel
         {
             CreatedAt = new DateTime(2025, 4, 17, 17, 46, 31),
-            EmailAddress = EmailRecipientModelSeeds.First().EmailAddress
+            EmailAddress = EmailEntitySeeds.Entity1.EmailAddress
         };
 
         // Act & Assert
@@ -66,14 +64,14 @@ public class EmailFacadeTests : FacadeTestBase
     public async Task DeleteEmailRecipientAsync_RemovesExistingEmail()
     {
         // Arrange
-        var emailRecipientToDelete = EmailRecipientModelSeeds.First();
+        var emailRecipientToDelete = EmailRecipientMapper.ToDetailModel(EmailEntitySeeds.Entity1);
 
         // Act
         await EmailFacadeSut.DeleteEmailRecipientAsync(emailRecipientToDelete.EmailAddress);
 
         // Assert
         await using var uow = UnitOfWorkFactory.Create();
-        var repository = uow.GetRepository<EmailEntity>();
+        var repository = uow.GetRepository<EmailRecipientEntity>();
         var actualEmail = await repository.Get()
             .FirstOrDefaultAsync(e => e.EmailAddress == emailRecipientToDelete.EmailAddress);
         Assert.Null(actualEmail);
@@ -83,10 +81,10 @@ public class EmailFacadeTests : FacadeTestBase
     public async Task DeleteEmailRecipientAsync_DoesNotThrowOnNonexistentEmail()
     {
         // Arrange
-        var emailToDelete = EmailRecipientModelSeeds.First();
+        var emailToDelete = "test123@test.com";
 
         // Act & Assert
-        await EmailFacadeSut.DeleteEmailRecipientAsync(emailToDelete.EmailAddress);
+        await EmailFacadeSut.DeleteEmailRecipientAsync(emailToDelete);
         // Does not throw
     }
 
@@ -99,7 +97,7 @@ public class EmailFacadeTests : FacadeTestBase
 
         // Assert
         await using var uow = UnitOfWorkFactory.Create();
-        var repository = uow.GetRepository<EmailEntity>();
+        var repository = uow.GetRepository<EmailRecipientEntity>();
         var actualEmails = await repository.Get().ToListAsync();
 
         Assert.Empty(actualEmails);

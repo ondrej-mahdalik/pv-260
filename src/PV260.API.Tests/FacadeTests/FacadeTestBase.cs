@@ -14,21 +14,21 @@ namespace PV260.API.Tests.FacadeTests;
 public abstract class FacadeTestBase : IAsyncLifetime
 {
     private readonly MsSqlContainer _container = new MsSqlBuilder()
-        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+        .WithImage("mcr.microsoft.com/mssql/server:2022-CU18-ubuntu-22.04")
         .Build();
-    private IDbContextFactory<MainDbContext>? _dbContextFactory;
+    private DbContextContainerFactory? _dbContextFactory;
 
     protected FacadeTestBase()
     {
         ReportRecordMapper = new ReportRecordMapper();
         ReportMapper = new ReportMapper(ReportRecordMapper);
-        EmailMapper = new EmailMapper();
+        EmailRecipientMapper = new EmailMapper();
     }
 
     protected UnitOfWorkFactory UnitOfWorkFactory { get; private set; } = null!;
     protected ReportRecordMapper ReportRecordMapper { get; }
     protected IMapper<ReportEntity, ReportListModel, ReportDetailModel> ReportMapper { get; }
-    protected IMapper<EmailEntity, EmailRecipientModel, EmailRecipientModel> EmailMapper { get; }
+    protected IMapper<EmailRecipientEntity, EmailRecipientModel, EmailRecipientModel> EmailRecipientMapper { get; }
 
     protected IEmailFacade EmailFacadeSut { get; private set; } = null!;
     protected IReportFacade ReportFacadeSut { get; private set; } = null!;
@@ -41,27 +41,20 @@ public abstract class FacadeTestBase : IAsyncLifetime
         UnitOfWorkFactory = new UnitOfWorkFactory(_dbContextFactory);
 
         ReportFacadeSut = new ReportFacade(ReportRecordMapper, ReportMapper, UnitOfWorkFactory);
-        EmailFacadeSut = new EmailFacade(EmailMapper, UnitOfWorkFactory);
+        EmailFacadeSut = new EmailFacade(EmailRecipientMapper, UnitOfWorkFactory);
 
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        await using var dbContext = _dbContextFactory.CreateDbContext();
         await dbContext.Database.EnsureCreatedAsync();
         
         // Seed data
         await EmailEntitySeeds.SeedAsync(dbContext);
         await ReportEntitySeeds.SeedAsync(dbContext);
+        await ReportRecordEntitySeeds.SeedAsync(dbContext);
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
         await _container.DisposeAsync();
     }
-    
-    protected List<EmailRecipientModel> EmailRecipientModelSeeds =>
-        EmailEntitySeeds.SeededEmailEntities.Select(x => EmailMapper.ToDetailModel(x)).ToList();
-    
-    protected List<ReportDetailModel> ReportDetailModelSeeds =>
-        ReportEntitySeeds.SeededReportEntities.Select(x => ReportMapper.ToDetailModel(x)).ToList();
-    
-    protected List<ReportListModel> ReportListModelSeeds =>
-        ReportEntitySeeds.SeededReportEntities.Select(x => ReportMapper.ToListModel(x)).ToList();
 }

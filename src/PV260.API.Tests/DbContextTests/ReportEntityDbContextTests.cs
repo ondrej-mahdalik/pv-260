@@ -25,7 +25,7 @@ public class ReportEntityDbContextTests : DbContextTestBase
         // Assert
         await using var dbx = DbContextFactory.CreateDbContext();
         var actualEntity = await dbx.Reports.SingleAsync(x => x.Id == entity.Id);
-        DeepAssert.Equal(entity, actualEntity, nameof(ReportEntity.Records));
+        DeepAssert.Equal(entity, actualEntity);
     }
 
     [Fact]
@@ -72,19 +72,18 @@ public class ReportEntityDbContextTests : DbContextTestBase
         };
 
         // Act & Assert
-        await Assert.ThrowsAsync<DbUpdateException>(async () =>
-        {
-            DbContextSut.Reports.Add(entity);
-            await DbContextSut.SaveChangesAsync();
-        });
+        DbContextSut.Reports.Add(entity);
+        await Assert.ThrowsAsync<DbUpdateException>(async () => await DbContextSut.SaveChangesAsync());
     }
 
     [Fact]
     public async Task UpdateReportEntity()
     {
         // Arrange
-        var updatedEntity = ReportEntitySeeds.SeededReportEntities.First();
-        updatedEntity.Name = "Updated Report";
+        var updatedEntity = ReportEntitySeeds.Entity1 with
+        {
+            Name = "Updated Report"
+        };
 
         // Act
         DbContextSut.Reports.Update(updatedEntity);
@@ -93,14 +92,14 @@ public class ReportEntityDbContextTests : DbContextTestBase
         // Assert
         await using var dbx = DbContextFactory.CreateDbContext();
         var actualEntity = await dbx.Reports.SingleAsync(x => x.Id == updatedEntity.Id);
-        DeepAssert.Equal(updatedEntity, actualEntity);
+        DeepAssert.Equal(updatedEntity, actualEntity, nameof(ReportEntity.Records));
     }
 
     [Fact]
     public async Task DeleteReportEntity_DeletesExistingEntity()
     {
         // Arrange
-        var entityToDelete = ReportEntitySeeds.SeededReportEntities.First();
+        var entityToDelete = ReportEntitySeeds.Entity3;
 
         // Act
         DbContextSut.Reports.Remove(entityToDelete);
@@ -116,7 +115,7 @@ public class ReportEntityDbContextTests : DbContextTestBase
     public async Task DeleteReportEntity_DeletesExistingEntityWithRecords()
     {
         // Arrange
-        var entityToDelete = ReportEntitySeeds.SeededReportEntities.First(x => x.Records.Count > 0);
+        var entityToDelete = ReportEntitySeeds.Entity1;
 
         // Act
         DbContextSut.Reports.Remove(entityToDelete);
@@ -136,7 +135,11 @@ public class ReportEntityDbContextTests : DbContextTestBase
     public async Task DeleteReportEntity_NonExistentEntityThrows()
     {
         // Arrange
-        var entityToDelete = ReportEntitySeeds.SeededReportEntities.First() with { Id = Guid.NewGuid(), Records = [] };
+        var entityToDelete = new ReportEntity()
+        {
+            CreatedAt = new DateTime(2025, 4, 12, 11, 13, 57),
+            Name = "Non-existent Report"
+        };
 
         // Act & Assert
         DbContextSut.Reports.Remove(entityToDelete);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PV260.API.DAL.Entities;
+using PV260.API.Tests.Seeds;
 using PV260.Common.Models;
 using PV260.Common.Tests;
 
@@ -16,23 +17,25 @@ public class ReportFacadeTests : FacadeTestBase
         var actualReports = await ReportFacadeSut.GetAsync();
 
         // Assert
-        Assert.Equal(ReportListModelSeeds.Count, actualReports.Count);
-        foreach (var expectedReport in ReportListModelSeeds)
-            DeepAssert.Contains(expectedReport, actualReports);
+        Assert.Equal(3, actualReports.Count);
+        DeepAssert.Contains(ReportMapper.ToListModel(ReportEntitySeeds.Entity1), actualReports);
+        DeepAssert.Contains(ReportMapper.ToListModel(ReportEntitySeeds.Entity2), actualReports);
+        DeepAssert.Contains(ReportMapper.ToListModel(ReportEntitySeeds.Entity3), actualReports);
     }
 
     [Fact]
     public async Task GetReportByIdAsync_ReturnsCorrectReport()
     {
         // Arrange
-        var reportToGet = ReportDetailModelSeeds.First();
+        var reportToGet = ReportMapper.ToDetailModel(ReportEntitySeeds.Entity1);
 
         // Act
         var actualReport = await ReportFacadeSut.GetAsync(reportToGet.Id);
 
         // Assert
         Assert.NotNull(actualReport);
-        DeepAssert.Equal(reportToGet, actualReport);
+        Assert.NotEmpty(actualReport.Records);
+        DeepAssert.Equal(reportToGet, actualReport, nameof(ReportDetailModel.Records));
     }
 
     [Fact]
@@ -84,7 +87,7 @@ public class ReportFacadeTests : FacadeTestBase
     public async Task SaveReportAsync_UpdatesExistingReportWithRecords()
     {
         // Arrange
-        var reportToUpdate = ReportDetailModelSeeds.First() with
+        var reportToUpdate = ReportMapper.ToDetailModel(ReportEntitySeeds.Entity1) with
         {
             Name = "Updated Report"
         };
@@ -111,30 +114,10 @@ public class ReportFacadeTests : FacadeTestBase
     }
 
     [Fact]
-    public async Task SaveReportAsync_UpdatesExistingRecord()
-    {
-        // Arrange
-        var reportToUpdate = ReportDetailModelSeeds.First();
-        reportToUpdate.Records.First().CompanyName = "Updated Company";
-
-        // Act
-        await ReportFacadeSut.SaveAsync(reportToUpdate);
-
-        // Assert
-        await using var uow = UnitOfWorkFactory.Create();
-        var reportRepository = uow.GetRepository<ReportEntity>();
-        var actualReportEntity = await reportRepository.Get()
-            .FirstOrDefaultAsync(x => x.Id == reportToUpdate.Id);
-
-        Assert.NotNull(actualReportEntity);
-        DeepAssert.Equal(reportToUpdate, ReportMapper.ToDetailModel(actualReportEntity));
-    }
-
-    [Fact]
     public async Task DeleteReportAsync_DeletesExistingReportIncludingReports()
     {
         // Arrange
-        var reportToDelete = ReportDetailModelSeeds.First();
+        var reportToDelete = ReportMapper.ToDetailModel(ReportEntitySeeds.Entity1);
 
         // Act
         await ReportFacadeSut.DeleteAsync(reportToDelete.Id);

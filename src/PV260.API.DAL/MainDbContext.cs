@@ -13,7 +13,7 @@ public class MainDbContext(DbContextOptions<MainDbContext> options) : DbContext(
     /// <summary>
     /// Gets or sets the DbSet for email entities.
     /// </summary>
-    public DbSet<EmailEntity> Emails { get; set; }
+    public DbSet<EmailRecipientEntity> Emails { get; set; }
 
     /// <summary>
     /// Gets or sets the DbSet for report entities.
@@ -45,7 +45,7 @@ public class MainDbContext(DbContextOptions<MainDbContext> options) : DbContext(
         modelBuilder.Entity<ReportRecordEntity>()
             .HasKey(entity => new {entity.ReportId, entity.Id});
         
-        modelBuilder.Entity<EmailEntity>()
+        modelBuilder.Entity<EmailRecipientEntity>()
             .HasAlternateKey(entity => entity.EmailAddress);
     }
 }

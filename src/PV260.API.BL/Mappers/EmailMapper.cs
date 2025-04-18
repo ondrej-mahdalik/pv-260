@@ -3,29 +3,29 @@ using PV260.Common.Models;
 
 namespace PV260.API.BL.Mappers;
 
-public class EmailMapper : IMapper<EmailEntity, EmailRecipientModel, EmailRecipientModel>
+public class EmailMapper : IMapper<EmailRecipientEntity, EmailRecipientModel, EmailRecipientModel>
 {
-    public EmailRecipientModel ToListModel(EmailEntity entity)
+    public EmailRecipientModel ToListModel(EmailRecipientEntity recipientEntity)
     {
         return new EmailRecipientModel
         {
-            EmailAddress = entity.EmailAddress,
-            CreatedAt = entity.CreatedAt
+            EmailAddress = recipientEntity.EmailAddress,
+            CreatedAt = recipientEntity.CreatedAt
         };
     }
 
-    public EmailRecipientModel ToDetailModel(EmailEntity entity)
+    public EmailRecipientModel ToDetailModel(EmailRecipientEntity recipientEntity)
     {
         return new EmailRecipientModel
         {
-            EmailAddress = entity.EmailAddress,
-            CreatedAt = entity.CreatedAt
+            EmailAddress = recipientEntity.EmailAddress,
+            CreatedAt = recipientEntity.CreatedAt
         };
     }
 
-    public EmailEntity ToEntity(EmailRecipientModel detailRecipientModel)
+    public EmailRecipientEntity ToEntity(EmailRecipientModel detailRecipientModel)
     {
-        return new EmailEntity
+        return new EmailRecipientEntity
         {
             EmailAddress = detailRecipientModel.EmailAddress,
             CreatedAt = detailRecipientModel.CreatedAt

@@ -1,27 +1,31 @@
-﻿using PV260.API.DAL;
+﻿using Microsoft.EntityFrameworkCore;
 using PV260.API.DAL.Entities;
 
 namespace PV260.API.Tests.Seeds;
 
 internal static class EmailEntitySeeds
 {
-    public static readonly List<EmailEntity> SeededEmailEntities =
-    [
-        new()
-        {
-            CreatedAt = new DateTime(2025, 4, 16, 5, 46, 01),
-            EmailAddress = "test@test.com"
-        },
-        new()
-        {
-            CreatedAt = new DateTime(2025, 4, 16, 5, 51, 23),
-            EmailAddress = "test2@test.com"
-        }
-    ];
-    
-    public static async Task SeedAsync(MainDbContext dbContext)
+    public static readonly EmailRecipientEntity Entity1 = new()
     {
-        await dbContext.Emails.AddRangeAsync(SeededEmailEntities);
+        Id = new Guid("DFD3FE56-BE05-4280-BC24-92713E7539CB"),
+        CreatedAt = new DateTime(2025, 4, 16, 5, 46, 01),
+        EmailAddress = "test@test.com"
+    };
+
+    public static readonly EmailRecipientEntity Entity2 = new()
+    {
+        Id = new Guid("A276F8D4-9224-4C50-9A0D-9467C39FD8B3"),
+        CreatedAt = new DateTime(2025, 4, 16, 5, 51, 23),
+        EmailAddress = "test2@test.com"
+    };
+    
+    
+    public static async Task SeedAsync(DbContext dbContext)
+    {
+        await dbContext.Set<EmailRecipientEntity>().AddRangeAsync(
+            Entity1 with { },
+            Entity2 with { }
+        );
         await dbContext.SaveChangesAsync();
     }
 }

@@ -21,7 +21,7 @@ public static class ServiceCollectionExtensions
         // Mappers
         serviceCollection.AddSingleton<IMapper<ReportEntity, ReportListModel, ReportDetailModel>, ReportMapper>();
         serviceCollection.AddSingleton<IMapper<ReportRecordEntity, ReportRecordModel, ReportRecordModel>, ReportRecordMapper>();
-        serviceCollection.AddSingleton<IMapper<EmailEntity, EmailRecipientModel, EmailRecipientModel>, EmailMapper>();
+        serviceCollection.AddSingleton<IMapper<EmailRecipientEntity, EmailRecipientModel, EmailRecipientModel>, EmailMapper>();
         
         // Facades
         serviceCollection.AddSingleton<IReportFacade, ReportFacade>();

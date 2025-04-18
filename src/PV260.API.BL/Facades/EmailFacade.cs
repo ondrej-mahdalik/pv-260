@@ -8,14 +8,14 @@ namespace PV260.API.BL.Facades;
 
 /// <inheritdoc />
 public class EmailFacade(
-    IMapper<EmailEntity, EmailRecipientModel, EmailRecipientModel> emailMapper,
+    IMapper<EmailRecipientEntity, EmailRecipientModel, EmailRecipientModel> emailMapper,
     IUnitOfWorkFactory unitOfWorkFactory) : IEmailFacade
 {
     /// <inheritdoc />
     public async Task<IList<EmailRecipientModel>> GetAllEmailRecipientsAsync()
     {
         await using var uow = unitOfWorkFactory.Create();
-        var emails = await uow.GetRepository<EmailEntity>().Get().ToListAsync();
+        var emails = await uow.GetRepository<EmailRecipientEntity>().Get().ToListAsync();
         
         return emails.Select(emailMapper.ToListModel).ToList();
     }
@@ -26,7 +26,7 @@ public class EmailFacade(
     public async Task AddEmailRecipientAsync(EmailRecipientModel emailRecipientModel)
     {
         await using var uow = unitOfWorkFactory.Create();
-        var repository = uow.GetRepository<EmailEntity>();
+        var repository = uow.GetRepository<EmailRecipientEntity>();
         
         var entity = emailMapper.ToEntity(emailRecipientModel);
 
@@ -45,7 +45,7 @@ public class EmailFacade(
     public async Task DeleteEmailRecipientAsync(string emailAddress)
     {
         await using var uow = unitOfWorkFactory.Create();
-        var repository = uow.GetRepository<EmailEntity>();
+        var repository = uow.GetRepository<EmailRecipientEntity>();
         
         // Check if the email exists
         var entity = await repository.Get().FirstOrDefaultAsync(e => e.EmailAddress == emailAddress);
@@ -60,7 +60,7 @@ public class EmailFacade(
     public async Task DeleteAllEmailRecipientsAsync()
     {
         await using var uow = unitOfWorkFactory.Create();
-        var repository = uow.GetRepository<EmailEntity>();
+        var repository = uow.GetRepository<EmailRecipientEntity>();
         var entities = await repository.Get().ToListAsync();
         
         foreach (var entity in entities)

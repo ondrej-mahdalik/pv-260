@@ -19,7 +19,7 @@ public class ReportRecordEntityDbContextTests : DbContextTestBase
             SharesChangePercentage = 0.4,
             Ticker = "New Ticker",
             Weight = 4.0,
-            ReportId = ReportEntitySeeds.SeededReportEntities.First().Id
+            ReportId = ReportEntitySeeds.Entity2.Id
         };
         
         // Act
@@ -80,8 +80,10 @@ public class ReportRecordEntityDbContextTests : DbContextTestBase
     public async Task UpdateReportRecordEntity_UpdatesExistingRecord()
     {
         // Arrange
-        var entityToUpdate = ReportEntitySeeds.SeededReportEntities.First(x => x.Records.Count > 0).Records.First();
-        entityToUpdate.CompanyName = "Updated Company";
+        var entityToUpdate = ReportRecordEntitySeeds.Entity1 with
+        {
+            CompanyName = "Updated Company"
+        };
         
         // Act
         DbContextSut.ReportRecords.Update(entityToUpdate);
@@ -97,7 +99,7 @@ public class ReportRecordEntityDbContextTests : DbContextTestBase
     public async Task DeleteReportRecordEntity_DeletesExistingRecord()
     {
         // Arrange
-        var entityToDelete = ReportEntitySeeds.SeededReportEntities.First(x => x.Records.Count > 0).Records.First();
+        var entityToDelete = ReportRecordEntitySeeds.Entity1;
         
         // Act
         DbContextSut.ReportRecords.Remove(entityToDelete);
