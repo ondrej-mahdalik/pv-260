@@ -22,7 +22,7 @@ namespace PV260.API.DAL.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PV260.API.DAL.Entities.EmailEntity", b =>
+            modelBuilder.Entity("PV260.API.DAL.Entities.EmailRecipientEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

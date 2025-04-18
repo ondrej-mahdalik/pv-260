@@ -12,7 +12,7 @@ using PV260.API.DAL;
 namespace PV260.API.DAL.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20250413085105_Initial")]
+    [Migration("20250418170649_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace PV260.API.DAL.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PV260.API.DAL.Entities.EmailEntity", b =>
+            modelBuilder.Entity("PV260.API.DAL.Entities.EmailRecipientEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
