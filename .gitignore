@@ -402,3 +402,7 @@ FodyWeavers.xsd
 
 # Solution Files
 *.sln
+
+# Environment files
+*.env
+*.env.*

@@ -1,32 +1,38 @@
-﻿using PV260.Common.Models;
-using PV260.Client.BL;
+﻿using PV260.Client.BL;
+using PV260.Common.Models;
 
 namespace PV260.Client.Mock;
 public class ApiClientMock : IApiClient
 {
-    private readonly List<ReportModel> _reports = new();
-    private SettingsModel? _settings = new ("59 22 * * 0", 7, true);
+    private readonly List<ReportDetailModel> _reports = [];
 
-    public Task<IEnumerable<ReportModel>> GetAllReportsAsync()
+    public Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
     {
-        return Task.FromResult<IEnumerable<ReportModel>>(_reports);
+        var listModels = _reports.Select(r => new ReportListModel
+        {
+            Id = r.Id,
+            CreatedAt = r.CreatedAt,
+            Name = r.Name
+        }).ToList();
+        
+        return Task.FromResult<IEnumerable<ReportListModel>>(listModels);
     }
 
-    public Task<ReportModel?> GetReportByIdAsync(Guid id)
+    public Task<ReportDetailModel?> GetReportByIdAsync(Guid id)
     {
         var report = _reports.FirstOrDefault(r => r.Id == id);
         return Task.FromResult(report);
     }
 
-    public Task<ReportModel?> GetLatestReportAsync()
+    public Task<ReportDetailModel?> GetLatestReportAsync()
     {
         var report = _reports.OrderByDescending(r => r.CreatedAt).FirstOrDefault();
         return Task.FromResult(report);
     }
 
-    public Task<ReportModel> GenerateNewReportAsync()
+    public Task<ReportDetailModel> GenerateNewReportAsync()
     {
-        var newReport = new ReportModel { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow };
+        var newReport = new ReportDetailModel { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Name = "New Report" };
         _reports.Add(newReport);
         return Task.FromResult(newReport);
     }
@@ -50,16 +56,5 @@ public class ApiClientMock : IApiClient
     public Task SendReportAsync(Guid id)
     {
         return Task.CompletedTask;
-    }
-
-    public Task<SettingsModel?> GetSettingsAsync()
-    {
-        return Task.FromResult(_settings);
-    }
-
-    public Task<SettingsModel> UpdateSettingsAsync(SettingsModel settings)
-    {
-        _settings = settings;
-        return Task.FromResult(_settings);
     }
 }

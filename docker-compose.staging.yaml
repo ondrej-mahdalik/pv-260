@@ -6,6 +6,7 @@ services:
   pv260.api.db.staging:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: pv260.api.db.staging
+    restart: on-failure
     networks:
       - pv260.staging
     environment:
@@ -18,8 +19,10 @@ services:
   pv260.api.app.staging:
     image: ${IMAGE_NAME}
     container_name: pv260.api.app.staging
+    restart: on-failure
     environment:
       - DOTNET_ENVIRONMENT=Staging
+      - DalSettings__ConnectionString=Server=pv260.api.db.staging;Database=PV260;User Id=sa;Password=${DB_SA_PASSWORD};TrustServerCertificate=True;
     depends_on:
       - pv260.api.db.staging
     networks:

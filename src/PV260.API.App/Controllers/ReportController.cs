@@ -1,51 +1,81 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PV260.API.BL.Facades;
 using PV260.Common.Models;
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+                               // TODO Remove once all methods are implemented
 
 namespace PV260.API.App.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ReportController : ControllerBase
+public class ReportController(ReportFacade reportFacade) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ReportModel>>> GetAllReports()
+    [EndpointSummary("Get all reports")]
+    [EndpointDescription("Returns a list of all reports")]
+    public async Task<ActionResult<IEnumerable<ReportListModel>>> GetAllReports()
     {
-        return Ok(new List<ReportModel>());
+        return Ok(await reportFacade.GetAsync());
     }
     
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<ReportModel>> GetReportById(Guid id)
+    [EndpointSummary("Get report by ID")]
+    [EndpointDescription("Returns a detail of a report by its ID")]
+    public async Task<ActionResult<ReportDetailModel>> GetReportById(Guid id)
     {
-        return Ok(new ReportModel());
+        var report = await reportFacade.GetAsync(id);
+        if (report is null)
+            return NotFound();
+        
+        return Ok(report);
     }
     
     [HttpGet("latest")]
-    public async Task<ActionResult<ReportModel>> GetLatestReport()
+    [EndpointSummary("Get latest report")]
+    [EndpointDescription("Returns details of the latest report, if available")]
+    public async Task<ActionResult<ReportDetailModel>> GetLatestReport()
     {
-        return Ok(new ReportModel());
+        var report = await reportFacade.GetLatestAsync();
+        if (report is null)
+            return NotFound();
+        
+        return Ok(report);
     }
     
     [HttpPost("generate")]
-    public async Task<ActionResult<ReportModel>> GenerateNewReport()
+    [EndpointSummary("Generate a new report")]
+    [EndpointDescription("Generates a new report and returns its details")]
+    public async Task<ActionResult<ReportDetailModel>> GenerateNewReport()
     {
-        return Ok(new ReportModel());
+        // TODO Call the report facade to generate a new report here once implemented
+        return BadRequest("Not implemented");
     }
     
     [HttpDelete("{id:guid}")]
+    [EndpointSummary("Delete report by ID")]
+    [EndpointDescription("Deletes a report by its ID. If the report is not found, nothing happens.")]
     public async Task<ActionResult> DeleteReport(Guid id)
     {
+        await reportFacade.DeleteAsync(id);
         return NoContent();
     }
     
     [HttpDelete("all")]
+    [EndpointSummary("Delete all reports")]
+    [EndpointDescription("Deletes all reports")]
     public async Task<ActionResult> DeleteAllReports()
     {
+        await reportFacade.DeleteAllAsync();
         return NoContent();
     }
     
     [HttpPost("{id:guid}/send")]
+    [EndpointSummary("Send email to recipients with report")]
+    [EndpointDescription("Sends an email to all recipients with the report details")]
     public async Task<ActionResult> SendReport(Guid id)
     {
-        return Ok();
+        // TODO Call the report facade to send the report here once implemented
+        return BadRequest("Not implemented");
     }
 }

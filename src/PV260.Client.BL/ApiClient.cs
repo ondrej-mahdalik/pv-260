@@ -2,66 +2,57 @@
 using PV260.Common.Models;
 
 namespace PV260.Client.BL;
-public class ApiClient : IApiClient
+
+/// <summary>
+/// Implementation of the <see cref="IApiClient"/> interface for interacting with the PV260 API.
+/// </summary>
+public class ApiClient(HttpClient httpClient) : IApiClient
 {
-    private readonly HttpClient _httpClient;
-
-    public ApiClient(HttpClient httpClient)
+    /// <inheritdoc />
+    public async Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
     {
-        _httpClient = httpClient;
+        return await httpClient.GetFromJsonAsync<IEnumerable<ReportListModel>>("Report") ?? new List<ReportListModel>();
     }
 
-    public async Task<IEnumerable<ReportModel>> GetAllReportsAsync()
+    /// <inheritdoc />
+    public async Task<ReportDetailModel?> GetReportByIdAsync(Guid id)
     {
-        return await _httpClient.GetFromJsonAsync<IEnumerable<ReportModel>>("Report") ?? new List<ReportModel>();
+        return await httpClient.GetFromJsonAsync<ReportDetailModel>($"Report/{id}");
     }
 
-    public async Task<ReportModel?> GetReportByIdAsync(Guid id)
+    /// <inheritdoc />
+    public async Task<ReportDetailModel?> GetLatestReportAsync()
     {
-        return await _httpClient.GetFromJsonAsync<ReportModel>($"Report/{id}");
+        return await httpClient.GetFromJsonAsync<ReportDetailModel>("Report/latest");
     }
 
-    public async Task<ReportModel?> GetLatestReportAsync()
+    /// <inheritdoc />
+    public async Task<ReportDetailModel> GenerateNewReportAsync()
     {
-        return await _httpClient.GetFromJsonAsync<ReportModel>("Report/latest");
-    }
-
-    public async Task<ReportModel> GenerateNewReportAsync()
-    {
-        var response = await _httpClient.PostAsJsonAsync("Report/generate", new { });
+        var response = await httpClient.PostAsJsonAsync("Report/generate", new { });
         response.EnsureSuccessStatusCode();
-        var report = await response.Content.ReadFromJsonAsync<ReportModel>();
+        var report = await response.Content.ReadFromJsonAsync<ReportDetailModel>();
         return report ?? throw new InvalidOperationException("Failed to generate new report");
     }
 
+    /// <inheritdoc />
     public async Task DeleteReportAsync(Guid id)
     {
-        var response = await _httpClient.DeleteAsync($"Report/{id}");
+        var response = await httpClient.DeleteAsync($"Report/{id}");
         response.EnsureSuccessStatusCode();
     }
 
+    /// <inheritdoc />
     public async Task DeleteAllReportsAsync()
     {
-        var response = await _httpClient.DeleteAsync("Report/all");
+        var response = await httpClient.DeleteAsync("Report/all");
         response.EnsureSuccessStatusCode();
     }
 
+    /// <inheritdoc />
     public async Task SendReportAsync(Guid id)
     {
-        var response = await _httpClient.PostAsJsonAsync($"Report/{id}/send", new { });
+        var response = await httpClient.PostAsJsonAsync($"Report/{id}/send", new { });
         response.EnsureSuccessStatusCode();
-    }
-
-    public async Task<SettingsModel?> GetSettingsAsync()
-    {
-        return await _httpClient.GetFromJsonAsync<SettingsModel>("Configuration");
-    }
-
-    public async Task<SettingsModel> UpdateSettingsAsync(SettingsModel settings)
-    {
-        var response = await _httpClient.PostAsJsonAsync("Configuration", settings);
-        response.EnsureSuccessStatusCode();
-        var updatedSettings = await response.Content.ReadFromJsonAsync<SettingsModel>();
-        return updatedSettings ?? throw new InvalidOperationException("Failed to update settings");
     }
 }
