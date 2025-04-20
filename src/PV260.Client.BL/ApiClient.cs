@@ -55,10 +55,4 @@ public class ApiClient(HttpClient httpClient) : IApiClient
         var response = await httpClient.PostAsJsonAsync($"Report/{id}/send", new { });
         response.EnsureSuccessStatusCode();
     }
-
-    /// <inheritdoc />
-    public async Task<SettingsModel?> GetSettingsAsync()
-    {
-        return await httpClient.GetFromJsonAsync<SettingsModel>("Configuration");
-    }
 }

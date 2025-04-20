@@ -48,10 +48,4 @@ public interface IApiClient
     /// </summary>
     /// <param name="id">The unique identifier of the report to send.</param>
     Task SendReportAsync(Guid id);
-
-    /// <summary>
-    /// Retrieves the current settings.
-    /// </summary>
-    /// <returns><see cref="SettingsModel"/> if found, otherwise null.</returns>
-    Task<SettingsModel?> GetSettingsAsync();
 }

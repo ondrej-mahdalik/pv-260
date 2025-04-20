@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using PV260.API.BL.Invocables;
-using PV260.Common.Models;
+using PV260.API.BL.Options;
 
 namespace PV260.API.BL.Extensions;
 
@@ -17,7 +17,7 @@ public static class ServiceProviderExtensions
     /// <param name="serviceProvider">The service provider to which the scheduled tasks will be added.</param>
     public static IServiceProvider AddScheduledTasks(this IServiceProvider serviceProvider)
     {
-        var settings = serviceProvider.GetRequiredService<IOptions<SettingsModel>>();
+        var settings = serviceProvider.GetRequiredService<IOptions<ReportOptions>>();
 
         serviceProvider.UseScheduler(scheduler =>
         {

@@ -62,11 +62,4 @@ public class ApiClientMockTests
         var reports = await _client.GetAllReportsAsync();
         Assert.Empty(reports);
     }
-
-    [Fact]
-    public async Task GetSettingsAsync_ReturnsCurrentSettings()
-    {
-        var settings = await _client.GetSettingsAsync();
-        Assert.NotNull(settings);
-    }
 }

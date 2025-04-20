@@ -22,7 +22,7 @@ services:
     restart: on-failure
     environment:
       - DOTNET_ENVIRONMENT=Staging
-      - ConnectionStrings__DefaultConnection=Server=pv260.api.db.staging;Database=PV260;User Id=sa;Password=${DB_SA_PASSWORD};TrustServerCertificate=True;
+      - DalSettings__ConnectionString=Server=pv260.api.db.staging;Database=PV260;User Id=sa;Password=${DB_SA_PASSWORD};TrustServerCertificate=True;
     depends_on:
       - pv260.api.db.staging
     networks:

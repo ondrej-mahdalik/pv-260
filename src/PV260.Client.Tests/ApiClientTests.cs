@@ -1,9 +1,9 @@
-﻿using Moq;
+﻿using System.Net;
+using System.Net.Http.Json;
+using Moq;
 using Moq.Protected;
 using PV260.Client.BL;
 using PV260.Common.Models;
-using System.Net;
-using System.Net.Http.Json;
 
 namespace PV260.Client.Tests
 {

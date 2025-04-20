@@ -1,17 +1,20 @@
 using PV260.API.BL.Extensions;
+using PV260.API.BL.Options;
 using PV260.API.DAL.Extensions;
 using PV260.API.DAL.Migrator;
-using PV260.Common.Models;
+using PV260.API.DAL.Options;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.Configure<SettingsModel>(builder.Configuration.GetSection("ReportSettings"));
+builder.Services.Configure<DalOptions>(builder.Configuration.GetSection("DalSettings"));
+builder.Services.Configure<ReportOptions>(builder.Configuration.GetSection("ReportSettings"));
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("EmailSettings"));
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddDalServices();
 builder.Services.AddDBlServices();
-builder.Services.AddDalServices(builder.Configuration);
 
 var app = builder.Build();
 

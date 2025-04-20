@@ -1,18 +1,10 @@
-﻿using PV260.Common.Models;
-using PV260.Client.BL;
+﻿using PV260.Client.BL;
+using PV260.Common.Models;
 
 namespace PV260.Client.Mock;
 public class ApiClientMock : IApiClient
 {
     private readonly List<ReportDetailModel> _reports = [];
-
-    private readonly SettingsModel? _settings = new()
-    {
-        ReportGenerationCron = "59 22 * * 0",
-        ReportDaysToKeep = 7,
-        OldReportCleanupCron = "0 2 * * *",
-        SendEmailOnReportGeneration = true
-    };
 
     public Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
     {
@@ -64,10 +56,5 @@ public class ApiClientMock : IApiClient
     public Task SendReportAsync(Guid id)
     {
         return Task.CompletedTask;
-    }
-
-    public Task<SettingsModel?> GetSettingsAsync()
-    {
-        return Task.FromResult(_settings);
     }
 }

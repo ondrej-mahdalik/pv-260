@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PV260.API.BL.Facades;
 using PV260.Common.Models;
+
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
                                // TODO Remove once all methods are implemented
 

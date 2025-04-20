@@ -15,13 +15,17 @@ public class Repository<TEntity>(DbContext context) : IRepository<TEntity>
     /// <inheritdoc />
     public IQueryable<TEntity> Get()
     {
-        return context.Set<TEntity>();
+        return context.Set<TEntity>()
+            .AsNoTracking();
     }
 
     /// <inheritdoc />
     public async Task<TEntity?> GetByIdAsync(Guid id)
     {
-        return await context.Set<TEntity>().FindAsync(id).ConfigureAwait(false);
+        return await context.Set<TEntity>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(entity => entity.Id == id)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
