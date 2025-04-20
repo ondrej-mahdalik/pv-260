@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PV260.API.DAL.Entities;
-using PV260.Common.Models;
 
 namespace PV260.API.DAL;
 

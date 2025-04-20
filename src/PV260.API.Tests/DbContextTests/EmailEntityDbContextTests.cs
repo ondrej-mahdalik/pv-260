@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PV260.API.DAL.Entities;
-using PV260.API.DAL.UnitOfWork;
 using PV260.API.Tests.Seeds;
 using PV260.Tests.Common;
 

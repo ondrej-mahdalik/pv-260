@@ -1,5 +1,4 @@
 ﻿using Coravel;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using PV260.API.BL.Invocables;

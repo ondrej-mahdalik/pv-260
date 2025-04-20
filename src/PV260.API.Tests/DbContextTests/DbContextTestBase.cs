@@ -1,5 +1,4 @@
 ﻿using PV260.API.DAL;
-using PV260.API.DAL.Entities;
 using PV260.API.Tests.Factories;
 using PV260.API.Tests.Seeds;
 using Testcontainers.MsSql;

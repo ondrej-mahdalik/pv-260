@@ -1,7 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PV260.API.BL.Facades;
+﻿using PV260.API.BL.Facades;
 using PV260.API.BL.Mappers;
-using PV260.API.DAL;
 using PV260.API.DAL.Entities;
 using PV260.API.DAL.UnitOfWork;
 using PV260.API.Tests.Factories;
