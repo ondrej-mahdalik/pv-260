@@ -6,10 +6,9 @@ namespace PV260.API.BL.Invocables;
 public class GenerateReportInvocable(ReportFacade reportFacade) : IInvocable
 {
     private readonly ReportFacade _reportFacade = reportFacade;
-    
-    public Task Invoke()
+
+    public async Task Invoke()
     {
-        // TODO Trigger report generation in the report facade here once implemented
-        throw new NotImplementedException();
+        await _reportFacade.GenerateReportAsync();
     }
 }

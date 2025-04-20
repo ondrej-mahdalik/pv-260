@@ -6,6 +6,8 @@ using PV260.API.Tests.Factories;
 using PV260.API.Tests.Seeds;
 using PV260.Common.Models;
 using Testcontainers.MsSql;
+using Microsoft.Extensions.Options;
+using PV260.API.BL.Options;
 
 namespace PV260.API.Tests.FacadeTests;
 
@@ -38,12 +40,19 @@ public abstract class FacadeTestBase : IAsyncLifetime
         _dbContextFactory = new DbContextContainerFactory(_container.GetConnectionString());
         UnitOfWorkFactory = new UnitOfWorkFactory(_dbContextFactory);
 
-        ReportFacadeSut = new ReportFacade(ReportRecordMapper, ReportMapper, UnitOfWorkFactory);
+        var reportOptions = Options.Create(new ReportOptions
+        {
+            ReportDaysToKeep = 30,
+            ReportGenerationCron = "0 0 * * *",
+            OldReportCleanupCron = "0 0 * * 0",
+            SendEmailOnReportGeneration = false
+        });
+
+        ReportFacadeSut = new ReportFacade(ReportRecordMapper, ReportMapper, UnitOfWorkFactory, reportOptions);
         EmailFacadeSut = new EmailFacade(EmailRecipientMapper, UnitOfWorkFactory);
 
         await using var dbContext = _dbContextFactory.CreateDbContext();
         await dbContext.Database.EnsureCreatedAsync();
-        
         // Seed data
         await EmailEntitySeeds.SeedAsync(dbContext);
         await ReportEntitySeeds.SeedAsync(dbContext);

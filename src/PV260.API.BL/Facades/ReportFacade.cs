@@ -1,8 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using PV260.API.BL.Mappers;
+using PV260.API.BL.Options;
 using PV260.API.DAL.Entities;
 using PV260.API.DAL.UnitOfWork;
 using PV260.Common.Models;
+using System.Globalization;
+using Microsoft.Extensions.Logging;
+using System.Net.Http;
+using System.IO;
+using System.Collections.Generic;
+using CsvHelper;
 
 namespace PV260.API.BL.Facades;
 
@@ -10,12 +18,15 @@ namespace PV260.API.BL.Facades;
 public class ReportFacade(
     IMapper<ReportRecordEntity, ReportRecordModel, ReportRecordModel> reportRecordMapper,
     IMapper<ReportEntity, ReportListModel, ReportDetailModel> reportMapper,
-    IUnitOfWorkFactory unitOfWorkFactory)
+    IUnitOfWorkFactory unitOfWorkFactory,
+    IOptions<ReportOptions> reportOptions)
     : CrudFacadeBase<ReportListModel, ReportDetailModel, ReportEntity>(reportMapper, unitOfWorkFactory), IReportFacade
 {
     private readonly IMapper<ReportRecordEntity, ReportRecordModel, ReportRecordModel> _reportRecordMapper =
         reportRecordMapper;
     private readonly IMapper<ReportEntity, ReportListModel, ReportDetailModel> _reportMapper = reportMapper;
+    private readonly ReportOptions _reportOptions = reportOptions.Value;
+    private const string ArkFundsCsvUrl = "https://assets.ark-funds.com/fund-documents/funds-etf-csv/ARK_INNOVATION_ETF_ARKK_HOLDINGS.csv";
 
     public async Task<ReportDetailModel?> GetLatestAsync()
     {
@@ -38,12 +49,49 @@ public class ReportFacade(
 
         foreach (var report in reports)
             uow.GetRepository<ReportEntity>().Delete(report);
-        
+
         await uow.CommitAsync();
     }
-    
-    // TODO Implement report generation and old report cleanup methods here
-    // Use methods provided by the base class for CRUD operations
+
+    /// <summary>
+    /// Deletes reports that are older than the configured retention period.
+    /// </summary>
+    /// <returns>The number of reports deleted.</returns>
+    public async Task<int> DeleteOldReportsAsync()
+    {
+        var cutoffDate = DateTime.UtcNow.AddDays(-_reportOptions.ReportDaysToKeep);
+
+        await using var uow = UnitOfWorkFactory.Create();
+        var reports = await uow.GetRepository<ReportEntity>()
+            .Get()
+            .Where(r => r.CreatedAt < cutoffDate)
+            .ToListAsync();
+
+        foreach (var report in reports)
+        {
+            uow.GetRepository<ReportEntity>().Delete(report);
+        }
+
+        await uow.CommitAsync();
+        return reports.Count;
+    }
+
+    /// <summary>
+    /// Generates new report by fetching data from the specified CSV URL.
+    /// </summary>
+    /// <returns>New report</returns>
+    public async Task<ReportDetailModel> GenerateReportAsync()
+    {
+        using var httpClient = new HttpClient();
+        var csvData = await httpClient.GetStringAsync(ArkFundsCsvUrl);
+
+        var reportRecords = await ParseCsvData(csvData);
+
+        var reportDetail = CreateReportDetail(reportRecords);
+
+        await SaveAsync(reportDetail);
+        return reportDetail;
+    }
 
     /// <inheritdoc />
     public override async Task SaveAsync(ReportDetailModel model)
@@ -55,11 +103,108 @@ public class ReportFacade(
         // Delete existing report records
         var existingReportRecords = await reportRecordRepository.Get().Where(x => x.ReportId == model.Id).ToListAsync();
         reportRecordRepository.DeleteRange(existingReportRecords);
-        
+
         // Save the report
         var report = _reportMapper.ToEntity(model);
         await reportRepository.AddOrUpdateAsync(report);
-        
+
         await unitOfWork.CommitAsync();
+    }
+
+    private async Task<List<ReportRecordModel>> ParseCsvData(string csvData)
+    {
+        var reportRecords = new List<ReportRecordModel>();
+        using var reader = new StringReader(csvData);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+        csv.Read();
+        csv.ReadHeader();
+
+        var latestReport = await GetLatestAsync();
+        var latestRecords = latestReport?.Records?.ToDictionary(r => r.Ticker) ?? new Dictionary<string, ReportRecordModel>();
+
+        var currentTickers = new HashSet<string>();
+
+        while (csv.Read())
+        {
+            if (IsEndOfRelevantData(csv))
+            {
+                break;
+            }
+
+            var ticker = csv.GetField<string>("ticker");
+            if (ticker != null)
+            {
+                currentTickers.Add(ticker);
+                var record = CreateReportRecord(csv, ticker, latestRecords);
+                reportRecords.Add(record);
+            }
+        }
+
+        AddMissingTickerRecords(latestRecords, currentTickers, reportRecords);
+
+        return reportRecords;
+    }
+
+    private bool IsEndOfRelevantData(CsvReader csv)
+    {
+        return csv.Context.Parser.RawRecord.Contains("Investors");
+    }
+
+    private ReportRecordModel CreateReportRecord(CsvReader csv, string ticker, Dictionary<string, ReportRecordModel> latestRecords)
+    {
+        var numberOfShares = int.Parse(csv.GetField<string>("shares").Replace(",", ""));
+        double sharesChangePercentage = CalculateSharesChangePercentage(ticker, numberOfShares, latestRecords);
+
+        return new ReportRecordModel
+        {
+            CompanyName = csv.GetField<string>("company"),
+            Ticker = ticker,
+            NumberOfShares = numberOfShares,
+            SharesChangePercentage = sharesChangePercentage,
+            Weight = double.Parse((csv.GetField<string>("weight (%)") ?? "").Replace("%", "").Trim())
+        };
+    }
+
+    private double CalculateSharesChangePercentage(string ticker, int numberOfShares, Dictionary<string, ReportRecordModel> latestRecords)
+    {
+        if (latestRecords.TryGetValue(ticker, out var latestRecord) && latestRecord != null)
+        {
+            return ((double)(numberOfShares - latestRecord.NumberOfShares) / latestRecord.NumberOfShares) * 100;
+        }
+        return 0;
+    }
+
+    private void AddMissingTickerRecords(Dictionary<string, ReportRecordModel> latestRecords, HashSet<string> currentTickers, List<ReportRecordModel> reportRecords)
+    {
+        foreach (var latestTicker in latestRecords.Keys)
+        {
+            if (!currentTickers.Contains(latestTicker))
+            {
+                var latestRecord = latestRecords[latestTicker];
+                if (latestRecord != null)
+                {
+                    var record = new ReportRecordModel
+                    {
+                        CompanyName = latestRecord.CompanyName,
+                        Ticker = latestTicker,
+                        NumberOfShares = 0,
+                        SharesChangePercentage = -100,
+                        Weight = 0
+                    };
+                    reportRecords.Add(record);
+                }
+            }
+        }
+    }
+
+    private ReportDetailModel CreateReportDetail(List<ReportRecordModel> reportRecords)
+    {
+        return new ReportDetailModel
+        {
+            Name = $"ARK Innovation ETF Report - {DateTime.UtcNow:yyyy-MM-dd}",
+            CreatedAt = DateTime.UtcNow,
+            Records = reportRecords
+        };
     }
 }
