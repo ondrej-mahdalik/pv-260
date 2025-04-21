@@ -114,7 +114,7 @@ public class ReportFacade(
         using var reader = new StringReader(csvData);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
-        csv.Read();
+        await csv.ReadAsync();
         csv.ReadHeader();
 
         var latestReport = await GetLatestAsync();
@@ -122,7 +122,7 @@ public class ReportFacade(
 
         var currentTickers = new HashSet<string>();
 
-        while (csv.Read())
+        while (await csv.ReadAsync())
         {
             if (IsEndOfRelevantData(csv))
             {
@@ -150,12 +150,13 @@ public class ReportFacade(
 
     private ReportRecordModel CreateReportRecord(CsvReader csv, string ticker, Dictionary<string, ReportRecordModel> latestRecords)
     {
-        var numberOfShares = int.Parse(csv.GetField<string>("shares").Replace(",", ""));
-        double sharesChangePercentage = CalculateSharesChangePercentage(ticker, numberOfShares, latestRecords);
+        var sharesField = csv.GetField<string>("shares") ?? "-1";
+        var numberOfShares = int.Parse(sharesField.Replace(",", ""));
+        double sharesChangePercentage = numberOfShares == -1 ? 0 : CalculateSharesChangePercentage(ticker, numberOfShares, latestRecords);
 
         return new ReportRecordModel
         {
-            CompanyName = csv.GetField<string>("company"),
+            CompanyName = csv.GetField<string>("company") ?? "Missing Company name",
             Ticker = ticker,
             NumberOfShares = numberOfShares,
             SharesChangePercentage = sharesChangePercentage,
