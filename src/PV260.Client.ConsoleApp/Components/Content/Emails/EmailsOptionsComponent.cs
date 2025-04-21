@@ -9,9 +9,8 @@ internal class EmailsOptionsComponent : INavigationComponent
 {
     private readonly EmailOptions[] _emailOptions =
     [
-        EmailOptions.SendEmail,
-        EmailOptions.DisplayLatestEmail,
-        EmailOptions.ListEmails
+        EmailOptions.ListEmails,
+        EmailOptions.AddEmail
     ];
 
     public int SelectedIndex { get; private set; }
@@ -64,7 +63,7 @@ internal class EmailsOptionsComponent : INavigationComponent
     {
         var table = new Table()
             .Border(TableBorder.Rounded)
-            .AddColumn("[bold underline green]Email Options List[/]")
+            .AddColumn("[bold underline green]Email Options[/]")
             .Expand();
 
         foreach (var (email, index) in _emailOptions.Select((email, index) => (email, index)))
@@ -81,4 +80,6 @@ internal class EmailsOptionsComponent : INavigationComponent
             .Border(BoxBorder.Rounded)
             .Expand();
     }
+
+    public event EventHandler? ReloadRequested;
 }

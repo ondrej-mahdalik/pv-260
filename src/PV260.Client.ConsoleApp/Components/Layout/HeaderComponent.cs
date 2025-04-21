@@ -14,5 +14,7 @@ internal class HeaderComponent : IHeaderComponent
             .Expand();
     }
 
+    public event EventHandler? ReloadRequested;
+
     public bool IsInSubMenu => false;
 }

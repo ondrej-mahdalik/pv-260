@@ -1,4 +1,5 @@
-﻿using PV260.Client.ConsoleApp.Components.Enums;
+﻿using PV260.Client.ConsoleApp.Components.Content.Reports;
+using PV260.Client.ConsoleApp.Components.Enums;
 using PV260.Client.ConsoleApp.Components.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation;
 using Spectre.Console;
@@ -21,36 +22,50 @@ internal class ConsoleApplication(
     private int _mainSelected;
     private bool _running = true;
 
-    public void Run()
+    public async Task Run()
     {
         _navigationService.Push(_contentRouter.Route(MenuItems.Home));
 
         while (_running)
         {
-            var component = _navigationService.Current;
-
-            AnsiConsole.Clear();
-
-            var layout = _layoutBuilder
-                .WithHeader()
-                .WithNavigation(GetCurrentNavItems(), GetCurrentSelectedIndex())
-                .WithContent(component.Render())
-                .WithFooter()
-                .Build();
-
-            AnsiConsole.Write(layout);
-
-            var key = Console.ReadKey(true);
-
-            DelegateNavigation(component, key);
+            await RenderComponents();
         }
 
         AnsiConsole.Clear();
         AnsiConsole.MarkupLine("[green]Thanks for using PV260 Report Generator![/]");
     }
 
-    private void DelegateNavigation(IRenderableComponent component, ConsoleKeyInfo key)
+    private async Task RenderComponents()
     {
+        
+        var component = _navigationService.Current;
+        var cancellationTokenSource = new CancellationTokenSource();
+        component.ReloadRequested += (_, _) =>
+        {
+            cancellationTokenSource.Cancel();
+        };
+
+        AnsiConsole.Clear();
+
+        var layout = _layoutBuilder
+            .WithHeader()
+            .WithNavigation(GetCurrentNavItems(), GetCurrentSelectedIndex())
+            .WithContent(component.Render())
+            .WithFooter()
+            .Build();
+
+        AnsiConsole.Write(layout);
+        
+         var key = await AnsiConsole.Console.Input.ReadKeyAsync(true, cancellationTokenSource.Token);
+
+        DelegateNavigation(component, key);
+    }
+
+    private void DelegateNavigation(IRenderableComponent component, ConsoleKeyInfo? nullableKey)
+    {
+        if (nullableKey is not { } key)
+            return;
+        
         if (key.Key == ConsoleKey.Escape)
         {
             _running = false;

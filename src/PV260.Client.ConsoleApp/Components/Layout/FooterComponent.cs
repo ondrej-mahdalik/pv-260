@@ -16,5 +16,7 @@ internal class FooterComponent : IFooterComponent
         return panel;
     }
 
+    public event EventHandler? ReloadRequested;
+
     public bool IsInSubMenu => false;
 }

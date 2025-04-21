@@ -34,4 +34,4 @@ var app = host.Services.GetRequiredService<ConsoleApplication>();
 
 _ = host.RunAsync();
 
-app.Run();
+await app.Run();

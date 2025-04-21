@@ -1,4 +1,5 @@
-﻿using PV260.Client.ConsoleApp.Components.Interfaces;
+﻿using PV260.Client.BL;
+using PV260.Client.ConsoleApp.Components.Interfaces;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -10,12 +11,23 @@ internal class EmailContentComponent(EmailOptions emailOption) : IContentCompone
 
     public IRenderable Render()
     {
-        var panel = new Panel($"[bold cyan]You have selected: {emailOption}[/]")
-            .Border(BoxBorder.Rounded)
-            .Expand();
-
-        return panel;
+        return emailOption switch
+        {
+            EmailOptions.ListEmails => new Table()
+                .AddColumn("[green]Email Address[/]")
+                .AddColumn("[green]Date Added[/]")
+                .Expand(),
+            
+            EmailOptions.AddEmail => new Panel("TODO Add Email")
+                .Border(BoxBorder.Rounded)
+                .Expand(),
+            _ => new Panel("Unknown option")
+                .Border(BoxBorder.Rounded)
+                .Expand()
+        };
     }
+
+    public event EventHandler? ReloadRequested;
 
     public void HandleInput(ConsoleKeyInfo key)
     {
@@ -23,5 +35,15 @@ internal class EmailContentComponent(EmailOptions emailOption) : IContentCompone
         {
             AnsiConsole.MarkupLine("[yellow]Returning to the email options...[/]");
         }
+    }
+
+    private async Task GetEmails()
+    {
+        
+    }
+    
+    private async Task AddEmail()
+    {
+        
     }
 }

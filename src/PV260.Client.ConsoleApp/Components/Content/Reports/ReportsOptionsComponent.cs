@@ -58,6 +58,8 @@ internal class ReportsOptionsComponent : INavigationComponent
             .Expand();
     }
 
+    public event EventHandler? ReloadRequested;
+
     public void HandleInput(ConsoleKeyInfo key, INavigationService navService)
     {
         if (key.Key == ConsoleKey.Enter)

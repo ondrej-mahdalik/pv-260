@@ -16,6 +16,8 @@ internal class AboutContentComponent : IContentComponent
             .Expand();
     }
 
+    public event EventHandler? ReloadRequested;
+
     public void HandleInput(ConsoleKeyInfo key)
     {
     }

@@ -6,4 +6,5 @@ internal interface IRenderableComponent
 {
     bool IsInSubMenu { get; }
     IRenderable Render();
+    event EventHandler ReloadRequested;
 }
