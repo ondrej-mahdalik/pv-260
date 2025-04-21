@@ -6,8 +6,6 @@ using PV260.API.DAL.Entities;
 using PV260.API.DAL.UnitOfWork;
 using PV260.Common.Models;
 using System.Globalization;
-using Microsoft.Extensions.Logging;
-using System.Net.Http;
 using System.IO;
 using System.Collections.Generic;
 using CsvHelper;
@@ -26,7 +24,6 @@ public class ReportFacade(
         reportRecordMapper;
     private readonly IMapper<ReportEntity, ReportListModel, ReportDetailModel> _reportMapper = reportMapper;
     private readonly ReportOptions _reportOptions = reportOptions.Value;
-    private const string ArkFundsCsvUrl = "https://assets.ark-funds.com/fund-documents/funds-etf-csv/ARK_INNOVATION_ETF_ARKK_HOLDINGS.csv";
 
     public async Task<ReportDetailModel?> GetLatestAsync()
     {
@@ -83,7 +80,7 @@ public class ReportFacade(
     public async Task<ReportDetailModel> GenerateReportAsync()
     {
         using var httpClient = new HttpClient();
-        var csvData = await httpClient.GetStringAsync(ArkFundsCsvUrl);
+        var csvData = await httpClient.GetStringAsync(_reportOptions.ArkFundsCsvUrl);
 
         var reportRecords = await ParseCsvData(csvData);
 
@@ -148,7 +145,7 @@ public class ReportFacade(
 
     private bool IsEndOfRelevantData(CsvReader csv)
     {
-        return csv.Context.Parser.RawRecord.Contains("Investors");
+        return csv.Context.Parser?.RawRecord.Contains("Investors") ?? false;
     }
 
     private ReportRecordModel CreateReportRecord(CsvReader csv, string ticker, Dictionary<string, ReportRecordModel> latestRecords)
@@ -168,7 +165,7 @@ public class ReportFacade(
 
     private double CalculateSharesChangePercentage(string ticker, int numberOfShares, Dictionary<string, ReportRecordModel> latestRecords)
     {
-        if (latestRecords.TryGetValue(ticker, out var latestRecord) && latestRecord != null)
+        if (latestRecords.TryGetValue(ticker, out var latestRecord))
         {
             return ((double)(numberOfShares - latestRecord.NumberOfShares) / latestRecord.NumberOfShares) * 100;
         }
@@ -179,22 +176,21 @@ public class ReportFacade(
     {
         foreach (var latestTicker in latestRecords.Keys)
         {
-            if (!currentTickers.Contains(latestTicker))
+            if (currentTickers.Contains(latestTicker))
             {
-                var latestRecord = latestRecords[latestTicker];
-                if (latestRecord != null)
-                {
-                    var record = new ReportRecordModel
-                    {
-                        CompanyName = latestRecord.CompanyName,
-                        Ticker = latestTicker,
-                        NumberOfShares = 0,
-                        SharesChangePercentage = -100,
-                        Weight = 0
-                    };
-                    reportRecords.Add(record);
-                }
+                continue;
             }
+
+            var latestRecord = latestRecords[latestTicker];
+            var record = new ReportRecordModel
+            {
+                CompanyName = latestRecord.CompanyName,
+                Ticker = latestTicker,
+                NumberOfShares = 0,
+                SharesChangePercentage = -100,
+                Weight = 0
+            };
+            reportRecords.Add(record);
         }
     }
 

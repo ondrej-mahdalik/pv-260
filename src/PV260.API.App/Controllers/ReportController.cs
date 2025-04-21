@@ -2,8 +2,6 @@
 using PV260.API.BL.Facades;
 using PV260.Common.Models;
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-
 namespace PV260.API.App.Controllers;
 
 [ApiController]
@@ -47,15 +45,8 @@ public class ReportController(IReportFacade reportFacade) : ControllerBase
     [EndpointDescription("Generates a new report and returns its details")]
     public async Task<ActionResult<ReportDetailModel>> GenerateNewReport()
     {
-        try
-        {
-            var report = await reportFacade.GenerateReportAsync();
-            return Ok(report);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest($"Failed to generate report: {ex.Message}");
-        }
+        var report = await reportFacade.GenerateReportAsync();
+        return Ok(report);
     }
 
     [HttpDelete("{id:guid}")]

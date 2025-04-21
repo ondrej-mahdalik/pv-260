@@ -36,4 +36,9 @@ public record ReportOptions
     /// Indicates whether an email to all recipients should be sent upon successful report generation.
     /// </summary>
     public required bool SendEmailOnReportGeneration { get; init; }
+
+    /// <summary>
+    /// The URL for the ARK Funds CSV data.
+    /// </summary>
+    public required string ArkFundsCsvUrl { get; init; }
 }

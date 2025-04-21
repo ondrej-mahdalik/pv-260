@@ -45,7 +45,8 @@ public abstract class FacadeTestBase : IAsyncLifetime
             ReportDaysToKeep = 30,
             ReportGenerationCron = "0 0 * * *",
             OldReportCleanupCron = "0 0 * * 0",
-            SendEmailOnReportGeneration = false
+            SendEmailOnReportGeneration = false,
+            ArkFundsCsvUrl = "https://assets.ark-funds.com/fund-documents/funds-etf-csv/ARK_INNOVATION_ETF_ARKK_HOLDINGS.csv"
         });
 
         ReportFacadeSut = new ReportFacade(ReportRecordMapper, ReportMapper, UnitOfWorkFactory, reportOptions);
