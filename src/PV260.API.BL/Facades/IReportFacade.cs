@@ -12,4 +12,22 @@ public interface IReportFacade : ICrudFacade<ReportListModel, ReportDetailModel,
     /// Deletes all reports from the storage.
     /// </summary>
     Task DeleteAllAsync();
+
+    /// <summary>
+    /// Gets the latest report from the storage.
+    /// </summary>
+    /// <returns>The latest report if available, otherwise null.</returns>
+    Task<ReportDetailModel?> GetLatestAsync();
+
+    /// <summary>
+    /// Generates a new report by downloading the latest data from ARK Funds and comparing it with the previous report.
+    /// </summary>
+    /// <returns>The newly generated report.</returns>
+    Task<ReportDetailModel> GenerateReportAsync();
+
+    /// <summary>
+    /// Deletes reports that are older than the configured retention period.
+    /// </summary>
+    /// <returns>The number of reports deleted.</returns>
+    Task<int> DeleteOldReportsAsync();
 }

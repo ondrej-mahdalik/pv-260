@@ -2,14 +2,11 @@
 using PV260.API.BL.Facades;
 using PV260.Common.Models;
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-                               // TODO Remove once all methods are implemented
-
 namespace PV260.API.App.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ReportController(ReportFacade reportFacade) : ControllerBase
+public class ReportController(IReportFacade reportFacade) : ControllerBase
 {
     [HttpGet]
     [EndpointSummary("Get all reports")]
@@ -18,7 +15,7 @@ public class ReportController(ReportFacade reportFacade) : ControllerBase
     {
         return Ok(await reportFacade.GetAsync());
     }
-    
+
     [HttpGet("{id:guid}")]
     [EndpointSummary("Get report by ID")]
     [EndpointDescription("Returns a detail of a report by its ID")]
@@ -27,10 +24,10 @@ public class ReportController(ReportFacade reportFacade) : ControllerBase
         var report = await reportFacade.GetAsync(id);
         if (report is null)
             return NotFound();
-        
+
         return Ok(report);
     }
-    
+
     [HttpGet("latest")]
     [EndpointSummary("Get latest report")]
     [EndpointDescription("Returns details of the latest report, if available")]
@@ -39,19 +36,19 @@ public class ReportController(ReportFacade reportFacade) : ControllerBase
         var report = await reportFacade.GetLatestAsync();
         if (report is null)
             return NotFound();
-        
+
         return Ok(report);
     }
-    
+
     [HttpPost("generate")]
     [EndpointSummary("Generate a new report")]
     [EndpointDescription("Generates a new report and returns its details")]
     public async Task<ActionResult<ReportDetailModel>> GenerateNewReport()
     {
-        // TODO Call the report facade to generate a new report here once implemented
-        return BadRequest("Not implemented");
+        var report = await reportFacade.GenerateReportAsync();
+        return Ok(report);
     }
-    
+
     [HttpDelete("{id:guid}")]
     [EndpointSummary("Delete report by ID")]
     [EndpointDescription("Deletes a report by its ID. If the report is not found, nothing happens.")]
@@ -60,7 +57,7 @@ public class ReportController(ReportFacade reportFacade) : ControllerBase
         await reportFacade.DeleteAsync(id);
         return NoContent();
     }
-    
+
     [HttpDelete("all")]
     [EndpointSummary("Delete all reports")]
     [EndpointDescription("Deletes all reports")]
@@ -69,7 +66,7 @@ public class ReportController(ReportFacade reportFacade) : ControllerBase
         await reportFacade.DeleteAllAsync();
         return NoContent();
     }
-    
+
     [HttpPost("{id:guid}/send")]
     [EndpointSummary("Send email to recipients with report")]
     [EndpointDescription("Sends an email to all recipients with the report details")]

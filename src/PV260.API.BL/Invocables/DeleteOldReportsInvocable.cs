@@ -7,9 +7,8 @@ public class DeleteOldReportsInvocable(ReportFacade reportFacade) : IInvocable
 {
     private readonly ReportFacade _reportFacade = reportFacade;
 
-    public Task Invoke()
+    public async Task Invoke()
     {
-        // TODO Call the report facade to delete old reports here once implemented
-        throw new NotImplementedException();
+        await _reportFacade.DeleteOldReportsAsync();
     }
 }

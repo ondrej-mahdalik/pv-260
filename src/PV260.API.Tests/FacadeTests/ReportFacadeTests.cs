@@ -139,4 +139,40 @@ public class ReportFacadeTests : FacadeTestBase
         // Act & Assert
         await ReportFacadeSut.DeleteAsync(nonExistingReportId);
     }
+
+    [Fact]
+    public async Task GenerateReportAsync_CreatesAndSavesNewReport()
+    {
+
+        // Act
+        var report = await ReportFacadeSut.GenerateReportAsync();
+
+        // Assert
+        Assert.NotNull(report);
+        Assert.True(report.Records.Count > 0, "Report should contain records.");
+        Assert.All(report.Records, r => Assert.False(string.IsNullOrEmpty(r.CompanyName), "CompanyName should not be null or empty."));
+    }
+
+    [Fact]
+    public async Task DeleteOldReportsAsync_DeletesReportsOlderThanRetentionPeriod()
+    {
+        // Arrange
+        var oldReport = new ReportEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "Old Report",
+            CreatedAt = DateTime.UtcNow.AddDays(-40)
+        };
+        await using var uow = UnitOfWorkFactory.Create();
+        var reportRepository = uow.GetRepository<ReportEntity>();
+        await reportRepository.AddOrUpdateAsync(oldReport);
+        await uow.CommitAsync();
+
+        // Act
+        var deletedCount = await ReportFacadeSut.DeleteOldReportsAsync();
+
+        // Assert
+        Assert.Equal(1, deletedCount);
+        Assert.False(await reportRepository.Get().AnyAsync(r => r.Id == oldReport.Id));
+    }
 }
