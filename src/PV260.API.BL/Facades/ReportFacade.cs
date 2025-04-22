@@ -6,22 +6,19 @@ using PV260.API.DAL.Entities;
 using PV260.API.DAL.UnitOfWork;
 using PV260.Common.Models;
 using System.Globalization;
-using System.IO;
-using System.Collections.Generic;
 using CsvHelper;
+using Microsoft.Extensions.Logging;
 
 namespace PV260.API.BL.Facades;
 
 /// <inheritdoc cref="IReportFacade"/>
 public class ReportFacade(
-    IMapper<ReportRecordEntity, ReportRecordModel, ReportRecordModel> reportRecordMapper,
     IMapper<ReportEntity, ReportListModel, ReportDetailModel> reportMapper,
     IUnitOfWorkFactory unitOfWorkFactory,
-    IOptions<ReportOptions> reportOptions)
+    IOptions<ReportOptions> reportOptions,
+    ILogger<ReportFacade> logger)
     : CrudFacadeBase<ReportListModel, ReportDetailModel, ReportEntity>(reportMapper, unitOfWorkFactory), IReportFacade
 {
-    private readonly IMapper<ReportRecordEntity, ReportRecordModel, ReportRecordModel> _reportRecordMapper =
-        reportRecordMapper;
     private readonly IMapper<ReportEntity, ReportListModel, ReportDetailModel> _reportMapper = reportMapper;
     private readonly ReportOptions _reportOptions = reportOptions.Value;
 
@@ -79,6 +76,8 @@ public class ReportFacade(
     /// <returns>New report</returns>
     public async Task<ReportDetailModel> GenerateReportAsync()
     {
+        logger.LogDebug("Generating new report. Source: {ArkFundsCsvUrl}", _reportOptions.ArkFundsCsvUrl);
+        
         using var httpClient = new HttpClient();
         var csvData = await httpClient.GetStringAsync(_reportOptions.ArkFundsCsvUrl);
 
@@ -152,7 +151,7 @@ public class ReportFacade(
     {
         var sharesField = csv.GetField<string>("shares") ?? "-1";
         var numberOfShares = int.Parse(sharesField.Replace(",", ""));
-        double sharesChangePercentage = numberOfShares == -1 ? 0 : CalculateSharesChangePercentage(ticker, numberOfShares, latestRecords);
+        var sharesChangePercentage = numberOfShares == -1 ? 0 : CalculateSharesChangePercentage(ticker, numberOfShares, latestRecords);
 
         return new ReportRecordModel
         {
@@ -166,10 +165,12 @@ public class ReportFacade(
 
     private double CalculateSharesChangePercentage(string ticker, int numberOfShares, Dictionary<string, ReportRecordModel> latestRecords)
     {
-        if (latestRecords.TryGetValue(ticker, out var latestRecord))
+        if (latestRecords.TryGetValue(ticker, out var latestRecord) && latestRecord.NumberOfShares > 0)
         {
-            return ((double)(numberOfShares - latestRecord.NumberOfShares) / latestRecord.NumberOfShares) * 100;
+            logger.LogDebug("Ticker: {Ticker}, Latest Shares: {LatestShares}, Current Shares: {CurrentShares}", ticker, latestRecord.NumberOfShares, numberOfShares);
+            return (double)(numberOfShares - latestRecord.NumberOfShares) / latestRecord.NumberOfShares * 100;
         }
+        
         return 0;
     }
 

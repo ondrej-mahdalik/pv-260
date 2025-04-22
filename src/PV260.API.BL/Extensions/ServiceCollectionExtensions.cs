@@ -1,6 +1,7 @@
 ﻿using Coravel;
 using Microsoft.Extensions.DependencyInjection;
 using PV260.API.BL.Facades;
+using PV260.API.BL.Invocables;
 using PV260.API.BL.Mappers;
 using PV260.API.DAL.Entities;
 using PV260.Common.Models;
@@ -26,6 +27,10 @@ public static class ServiceCollectionExtensions
         // Facades
         serviceCollection.AddSingleton<IReportFacade, ReportFacade>();
         serviceCollection.AddSingleton<IEmailFacade, EmailFacade>();
+        
+        // Invocables
+        serviceCollection.AddTransient<GenerateReportInvocable>();
+        serviceCollection.AddTransient<DeleteOldReportsInvocable>();
         
         // Scheduling
         serviceCollection.AddScheduler();
