@@ -2,9 +2,11 @@
 using PV260.Common.Models;
 
 namespace PV260.Client.Mock;
+
 public class ApiClientMock : IApiClient
 {
-    private readonly List<ReportDetailModel> _reports = [];
+    private readonly List<ReportDetailModel> _reports = new();
+    private readonly List<EmailRecipientModel> _emailRecipients = new();
 
     public Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
     {
@@ -14,7 +16,7 @@ public class ApiClientMock : IApiClient
             CreatedAt = r.CreatedAt,
             Name = r.Name
         }).ToList();
-        
+
         return Task.FromResult<IEnumerable<ReportListModel>>(listModels);
     }
 
@@ -55,6 +57,33 @@ public class ApiClientMock : IApiClient
 
     public Task SendReportAsync(Guid id)
     {
+        return Task.CompletedTask;
+    }
+
+    public Task<IEnumerable<EmailRecipientModel>> GetAllEmailsAsync()
+    {
+        return Task.FromResult<IEnumerable<EmailRecipientModel>>(_emailRecipients);
+    }
+
+    public Task AddEmailAsync(EmailRecipientModel emailRecipient)
+    {
+        _emailRecipients.Add(emailRecipient);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteEmailAsync(string email)
+    {
+        var recipient = _emailRecipients.FirstOrDefault(r => r.EmailAddress == email);
+        if (recipient != null)
+        {
+            _emailRecipients.Remove(recipient);
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAllEmailsAsync()
+    {
+        _emailRecipients.Clear();
         return Task.CompletedTask;
     }
 }

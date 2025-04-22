@@ -19,7 +19,8 @@ var host = Host.CreateDefaultBuilder(args)
             throw new ArgumentNullException(nameof(baseAddress), "Base address cannot be null or empty.");
         }
 
-        services.AddHttpClient<IApiClient, ApiClientMock>(client => { client.BaseAddress = new Uri(baseAddress); });
+        services.AddSingleton<IApiClient, ApiClientMock>();
+
 
         services.AddSingleton<IHeaderComponent, HeaderComponent>();
         services.AddSingleton<INavbarComponent, NavbarComponent>();
