@@ -113,11 +113,12 @@ internal class ConsoleApplication(
 
         return current switch
         {
-            INavigationComponent currentNavigationComponent => currentNavigationComponent.NavigationItems,
+            INavigationComponent currentNavigationComponent when currentNavigationComponent.NavigationItems.Any() =>
+                currentNavigationComponent.NavigationItems,
             IContentComponent when
-                _navigationService.LastNavigationComponent is INavigationComponent navigationComponent =>
-                navigationComponent.NavigationItems,
-            _ => _mainMenuItems.Select(m => m.ToString()).ToArray()
+                _navigationService.LastNavigationComponent is INavigationComponent navigationComponent &&
+                navigationComponent.NavigationItems.Any() => navigationComponent.NavigationItems,
+            _ => _mainMenuItems.Any() ? _mainMenuItems.Select(m => m.ToString()).ToArray() : []
         };
     }
 

@@ -42,6 +42,11 @@ internal class LatestGeneratedReportComponent(IApiClient apiClient) : INavigatio
 
     public void Navigate(ConsoleKey key)
     {
+        if (NavigationItems.Length == 0)
+        {
+            return;
+        }
+
         SelectedIndex = key switch
         {
             ConsoleKey.UpArrow => (SelectedIndex - 1 + NavigationItems.Length) % NavigationItems.Length,
