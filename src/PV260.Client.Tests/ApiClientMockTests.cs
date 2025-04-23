@@ -11,7 +11,7 @@ public class ApiClientMockTests
     public async Task GetAllReportsAsync_ReturnsAllReports()
     {
         var reports = await _client.GetAllReportsAsync();
-        Assert.Empty(reports);
+        Assert.NotEmpty(reports);
     }
 
     [Fact]
