@@ -8,6 +8,7 @@ using PV260.Client.ConsoleApp.Components;
 using PV260.Client.ConsoleApp.Components.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation;
 using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
+using PV260.Client.Mock;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((hostingContext, config) => { config.AddJsonFile("appsettings.json", true, true); })
@@ -20,8 +21,9 @@ var host = Host.CreateDefaultBuilder(args)
             throw new ArgumentNullException(nameof(baseAddress), "Base address cannot be null or empty.");
         }
 
-        services.AddHttpClient<IApiClient, ApiClientMock>(client => { client.BaseAddress = new Uri(baseAddress); });
+        //services.AddHttpClient<IApiClient, ApiClient>(client => { client.BaseAddress = new Uri(baseAddress); });
 
+        services.AddSingleton<IApiClient, ApiClientMock>();
         services.AddSingleton<IHeaderComponent, HeaderComponent>();
         services.AddSingleton<INavbarComponent, NavbarComponent>();
         services.AddSingleton<IFooterComponent, FooterComponent>();
