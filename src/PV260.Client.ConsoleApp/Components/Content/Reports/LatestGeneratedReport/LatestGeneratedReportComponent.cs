@@ -69,7 +69,7 @@ internal class LatestGeneratedReportComponent(IApiClient apiClient) : INavigatio
 
         var maxRowSize = (int)((terminalHeight - numberOfCharactersInHeader) / numberOfCharacterRowsPerTableRow);
 
-        var numberOfPages = recordCount / maxRowSize;
+        var numberOfPages = Math.Max(1, (recordCount + maxRowSize - 1) / maxRowSize);
 
         NavigationItems = Enumerable.Range(1, numberOfPages)
             .Select(i => $"Page {i}")
