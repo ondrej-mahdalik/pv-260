@@ -35,8 +35,8 @@ internal class ConsoleApplication(
 
             var layout = _layoutBuilder
                 .WithHeader()
-                .WithNavigation(GetCurrentNavItems(), GetCurrentSelectedIndex())
                 .WithContent(component.Render())
+                .WithNavigation(GetCurrentNavItems(), GetCurrentSelectedIndex())
                 .WithFooter()
                 .Build();
 
