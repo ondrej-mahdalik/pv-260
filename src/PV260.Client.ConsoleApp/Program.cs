@@ -6,6 +6,8 @@ using PV260.Client.BL;
 using PV260.Client.ConsoleApp;
 using PV260.Client.ConsoleApp.Components;
 using PV260.Client.ConsoleApp.Components.Interfaces;
+using PV260.Client.ConsoleApp.Components.Navigation;
+using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
 using PV260.Client.Mock;
 
 var host = Host.CreateDefaultBuilder(args)
@@ -20,7 +22,8 @@ var host = Host.CreateDefaultBuilder(args)
         }
 
         services.AddHttpClient<IApiClient, ApiClientMock>(client => { client.BaseAddress = new Uri(baseAddress); });
-
+        
+        services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IHeaderComponent, HeaderComponent>();
         services.AddSingleton<INavbarComponent, NavbarComponent>();
         services.AddSingleton<IFooterComponent, FooterComponent>();
