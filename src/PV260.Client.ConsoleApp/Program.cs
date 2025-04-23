@@ -6,7 +6,8 @@ using PV260.Client.BL;
 using PV260.Client.ConsoleApp;
 using PV260.Client.ConsoleApp.Components;
 using PV260.Client.ConsoleApp.Components.Interfaces;
-using PV260.Client.Mock;
+using PV260.Client.ConsoleApp.Components.Navigation;
+using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((hostingContext, config) => { config.AddJsonFile("appsettings.json", true, true); })
@@ -26,6 +27,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IFooterComponent, FooterComponent>();
         services.AddSingleton<IContentRouter, DefaultContentRouter>();
         services.AddSingleton<ILayoutBuilder, LayoutBuilder>();
+        services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ConsoleApplication>();
     })
     .Build();
