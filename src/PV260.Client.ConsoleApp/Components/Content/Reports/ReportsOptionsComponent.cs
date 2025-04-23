@@ -18,10 +18,7 @@ internal class ReportsOptionsComponent : INavigationComponent
 
     public bool IsInSubMenu => true;
 
-    public string[] GetNavigationItems()
-    {
-        return _reportOptions.Select(option => option.ToString()).ToArray();
-    }
+    public string[] NavigationItems => _reportOptions.Select(option => option.ToString()).ToArray();
 
     public void Navigate(ConsoleKey key)
     {

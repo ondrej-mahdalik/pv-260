@@ -18,10 +18,7 @@ internal class EmailsOptionsComponent : INavigationComponent
 
     public bool IsInSubMenu => true;
 
-    public string[] GetNavigationItems()
-    {
-        return _emailOptions.Select(option => option.ToString()).ToArray();
-    }
+    public string[] NavigationItems => _emailOptions.Select(option => option.ToString()).ToArray();
 
     public void Navigate(ConsoleKey key)
     {
