@@ -15,7 +15,7 @@ internal class ConsoleApplication(
 
     private readonly MenuItems[] _mainMenuItems =
     [
-        MenuItems.Home, MenuItems.Reports, MenuItems.Emails, MenuItems.About
+        MenuItems.Home, MenuItems.LatestGeneratedReport, MenuItems.Reports, MenuItems.Emails, MenuItems.About
     ];
 
     private readonly INavigationService _navigationService = navigationService;

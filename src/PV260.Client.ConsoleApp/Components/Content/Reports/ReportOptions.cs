@@ -3,6 +3,5 @@
 internal enum ReportOptions
 {
     GenerateNewReport,
-    DisplayLatestReport,
     ListReports
 }

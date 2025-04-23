@@ -10,7 +10,6 @@ internal class ReportsOptionsComponent : INavigationComponent
     private readonly ReportOptions[] _reportOptions =
     [
         ReportOptions.GenerateNewReport,
-        ReportOptions.DisplayLatestReport,
         ReportOptions.ListReports
     ];
 

@@ -13,6 +13,7 @@ internal class DefaultContentRouter : IContentRouter
         return menuItem switch
         {
             MenuItems.Home => new HomeContentComponent(),
+            MenuItems.LatestGeneratedReport => new LatestGeneratedReportComponent(apiClient),
             MenuItems.Reports => new ReportsOptionsComponent(),
             MenuItems.Emails => new EmailsOptionsComponent(),
             MenuItems.About => new AboutContentComponent(),
