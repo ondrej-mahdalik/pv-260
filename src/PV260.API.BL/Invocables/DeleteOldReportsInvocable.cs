@@ -1,14 +1,16 @@
 ﻿using Coravel.Invocable;
+using Microsoft.Extensions.Logging;
 using PV260.API.BL.Facades;
 
 namespace PV260.API.BL.Invocables;
 
-public class DeleteOldReportsInvocable(ReportFacade reportFacade) : IInvocable
+public class DeleteOldReportsInvocable(IReportFacade reportFacade, ILogger<DeleteOldReportsInvocable> logger) : IInvocable
 {
-    private readonly ReportFacade _reportFacade = reportFacade;
-
     public async Task Invoke()
     {
-        await _reportFacade.DeleteOldReportsAsync();
+        logger.LogDebug($"Scheduled report cleanup has been triggered.");
+        var reportsDeleted = await reportFacade.DeleteOldReportsAsync();
+        
+        logger.LogDebug("Scheduled report cleanup has been successfully completed. Deleted reports count: {DeletedReportsCount}", reportsDeleted);
     }
 }
