@@ -95,6 +95,10 @@ internal class ReportsOptionsComponent : INavigationComponent
                         await _apiClient.GenerateNewReportAsync();
                         _statusMessage = "[green]New report generated successfully![/]";
                     }
+                    catch (HttpRequestException)
+                    {
+                        _statusMessage = "[red]Unable to connect to the server. Please make sure the API server is running.[/]";
+                    }
                     catch (Exception ex)
                     {
                         _statusMessage = $"[red]Failed to generate report: {ex.Message}[/]";
@@ -103,16 +107,24 @@ internal class ReportsOptionsComponent : INavigationComponent
                     break;
 
                 case ReportOptions.DisplayLatestReport:
-                    var latestReport = await _apiClient.GetLatestReportAsync();
-                    if (latestReport != null)
+                    try
                     {
-                        var detailComponent = new ReportDetailComponent(_apiClient, latestReport.Id, _navigationService);
-                        await detailComponent.LoadReportAsync();
-                        navService.Push(detailComponent);
+                        var latestReport = await _apiClient.GetLatestReportAsync();
+                        if (latestReport != null)
+                        {
+                            var detailComponent = new ReportDetailComponent(_apiClient, latestReport.Id, _navigationService);
+                            await detailComponent.LoadReportAsync();
+                            navService.Push(detailComponent);
+                        }
+                        else
+                        {
+                            _statusMessage = "[yellow]No reports available[/]";
+                            _navigationService.Push(this);
+                        }
                     }
-                    else
+                    catch (HttpRequestException)
                     {
-                        _statusMessage = "[yellow]No reports available[/]";
+                        _statusMessage = "[red]Unable to connect to the server. Please make sure the API server is running.[/]";
                         _navigationService.Push(this);
                     }
                     break;
@@ -128,7 +140,7 @@ internal class ReportsOptionsComponent : INavigationComponent
         {
             AnsiConsole.Clear();
             navService.Pop();
-            AnsiConsole.MarkupLine("[yellow]Returning to previous menu...[/]");
+            AnsiConsole.MarkupLine("[yellow]Returning to main menu...[/]");
         }
     }
 }

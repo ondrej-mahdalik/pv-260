@@ -42,7 +42,13 @@ namespace PV260.Client.Tests
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = JsonContent.Create(expectedReports)
+                    Content = JsonContent.Create(new PaginatedResult<ReportListModel>
+                    {
+                        Items = expectedReports,
+                        TotalCount = expectedReports.Count,
+                        Page = 1,
+                        PageSize = 10
+                    })
                 });
 
             // Act
@@ -50,7 +56,7 @@ namespace PV260.Client.Tests
 
             // Assert
             Assert.NotNull(reports);
-            Assert.Single(reports);
+            Assert.Single(reports.Items);
         }
 
         [Fact]

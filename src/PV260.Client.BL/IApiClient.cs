@@ -8,10 +8,12 @@ namespace PV260.Client.BL;
 public interface IApiClient
 {
     /// <summary>
-    /// Retrieves all reports.
+    /// Retrieves all reports with pagination.
     /// </summary>
-    /// <returns>A collection of <see cref="ReportListModel"/>.</returns>
-    Task<IEnumerable<ReportListModel>> GetAllReportsAsync();
+    /// <param name="page">The page number (1-based).</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <returns>A paginated result containing the reports and total count.</returns>
+    Task<PaginatedResult<ReportListModel>> GetAllReportsAsync(int page = 1, int pageSize = 10);
 
     /// <summary>
     /// Retrieves a specific report by its unique identifier.

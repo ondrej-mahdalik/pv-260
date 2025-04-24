@@ -44,14 +44,14 @@ internal class ConsoleApplication(
 
             var key = Console.ReadKey(true);
 
-            DelegateNavigation(component, key);
+            DelegateNavigation(component, key).Wait();
         }
 
         AnsiConsole.Clear();
         AnsiConsole.MarkupLine("[green]Thanks for using PV260 Report Generator![/]");
     }
 
-    private void DelegateNavigation(IRenderableComponent component, ConsoleKeyInfo key)
+    private async Task DelegateNavigation(IRenderableComponent component, ConsoleKeyInfo key)
     {
         if (key.Key == ConsoleKey.Escape)
         {
@@ -69,23 +69,10 @@ internal class ConsoleApplication(
         {
             navComponent.Navigate(key.Key);
             navComponent.HandleInput(key, _navigationService);
-
-            if (key.Key == ConsoleKey.Backspace)
-            {
-                if (_navigationService.CanGoBack)
-                {
-                    _navigationService.Pop();
-                }
-            }
         }
         else if (component is IContentComponent contentComponent)
         {
-            contentComponent.HandleInput(key);
-            
-            if (key.Key == ConsoleKey.Backspace && _navigationService.CanGoBack)
-            {
-                _navigationService.Pop();
-            }
+            await contentComponent.HandleInput(key);
         }
     }
 
@@ -107,7 +94,6 @@ internal class ConsoleApplication(
                 {
                     _navigationService.Pop();
                 }
-
                 break;
         }
     }

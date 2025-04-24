@@ -13,6 +13,10 @@ internal class ReportsListComponent : INavigationComponent
     private readonly INavigationService _navigationService;
     private IEnumerable<ReportListModel> _reports = [];
     private int _selectedIndex;
+    private int _currentPage = 1;
+    private const int PageSize = 10;
+    private int _totalPages = 1;
+    private string? _errorMessage;
 
     public ReportsListComponent(IApiClient apiClient, INavigationService navigationService)
     {
@@ -30,7 +34,19 @@ internal class ReportsListComponent : INavigationComponent
 
     public async Task LoadReportsAsync()
     {
-        _reports = await _apiClient.GetAllReportsAsync();
+        try
+        {
+            var result = await _apiClient.GetAllReportsAsync(_currentPage, PageSize);
+            _reports = result.Items;
+            _totalPages = result.TotalPages;
+            _errorMessage = null;
+        }
+        catch (HttpRequestException)
+        {
+            _reports = [];
+            _totalPages = 1;
+            _errorMessage = "[red]Unable to connect to the server. Please make sure the API server is running.[/]";
+        }
     }
 
     public string[] GetNavigationItems()
@@ -56,6 +72,13 @@ internal class ReportsListComponent : INavigationComponent
 
     public IRenderable Render()
     {
+        if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            return new Panel(_errorMessage)
+                .Border(BoxBorder.Rounded)
+                .Expand();
+        }
+
         var reports = _reports.ToList();
         if (reports.Count == 0)
         {
@@ -79,23 +102,62 @@ internal class ReportsListComponent : INavigationComponent
             table.AddRow(text, report.CreatedAt.ToString("g"));
         }
 
-        return new Panel(table)
+        var mainPanel = new Panel(table)
             .Header("Reports List", Justify.Center)
             .Border(BoxBorder.Rounded)
             .Expand();
+
+        var paginationPanel = new Panel($"[yellow]Page {_currentPage}/{_totalPages}[/]")
+            .Border(BoxBorder.Rounded);
+        paginationPanel.Height = 3;
+
+        var navigationPanel = new Panel("[yellow]Use ← and → to navigate[/]")
+            .Border(BoxBorder.Rounded);
+        navigationPanel.Height = 3;
+
+        return new Layout()
+            .SplitRows(
+                new Layout(mainPanel),
+                new Layout()
+                    .SplitColumns(
+                        new Layout(paginationPanel).Ratio(1),
+                        new Layout(navigationPanel).Ratio(2)
+                    )
+            );
     }
 
-    public void HandleInput(ConsoleKeyInfo key, INavigationService navService)
+    public async void HandleInput(ConsoleKeyInfo key, INavigationService navService)
     {
-        var reports = _reports.ToList();
-        if (reports.Count == 0) return;
-
-        if (key.Key == ConsoleKey.Enter)
+        switch (key.Key)
         {
-            var selectedReport = reports[SelectedIndex];
-            var detailComponent = new ReportDetailComponent(_apiClient, selectedReport.Id, _navigationService);
-            _ = detailComponent.LoadReportAsync();
-            navService.Push(detailComponent);
+            case ConsoleKey.Enter:
+                var reports = _reports.ToList();
+                if (reports.Count == 0) return;
+                
+                var selectedReport = reports[SelectedIndex];
+                var detailComponent = new ReportDetailComponent(_apiClient, selectedReport.Id, _navigationService);
+                await detailComponent.LoadReportAsync();
+                navService.Push(detailComponent);
+                break;
+            case ConsoleKey.LeftArrow:
+                if (_currentPage > 1)
+                {
+                    _currentPage--;
+                    await LoadReportsAsync();
+                }
+                break;
+            case ConsoleKey.RightArrow:
+                if (_currentPage < _totalPages)
+                {
+                    _currentPage++;
+                    await LoadReportsAsync();
+                }
+                break;
+            case ConsoleKey.Backspace:
+                AnsiConsole.Clear();
+                navService.Pop();
+                AnsiConsole.MarkupLine("[yellow]Returning to report options...[/]");
+                break;
         }
     }
 } 

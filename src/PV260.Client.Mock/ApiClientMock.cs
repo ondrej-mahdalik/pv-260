@@ -13,7 +13,7 @@ public class ApiClientMock : IApiClient
         _httpClient = httpClient;
     }
 
-    public Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
+    public Task<PaginatedResult<ReportListModel>> GetAllReportsAsync(int page = 1, int pageSize = 10)
     {
         var listModels = _reports.Select(r => new ReportListModel
         {
@@ -22,7 +22,17 @@ public class ApiClientMock : IApiClient
             Name = r.Name
         }).ToList();
         
-        return Task.FromResult<IEnumerable<ReportListModel>>(listModels);
+        // Apply pagination
+        var skip = (page - 1) * pageSize;
+        var paginatedReports = listModels.Skip(skip).Take(pageSize);
+        
+        return Task.FromResult(new PaginatedResult<ReportListModel>
+        {
+            Items = paginatedReports,
+            TotalCount = listModels.Count,
+            Page = page,
+            PageSize = pageSize
+        });
     }
 
     public Task<ReportDetailModel?> GetReportByIdAsync(Guid id)
@@ -64,7 +74,12 @@ public class ApiClientMock : IApiClient
             ("Zoom Video Communications, Inc.", "ZM"),
             ("Palantir Technologies Inc.", "PLTR"),
             ("Spotify Technology S.A.", "SPOT"),
-            ("Roblox Corporation", "RBLX")
+            ("Roblox Corporation", "RBLX"),
+            ("UiPath Inc.", "PATH"),
+            ("DraftKings Inc.", "DKNG"),
+            ("Teladoc Health, Inc.", "TDOC"),
+            ("Shopify Inc.", "SHOP"),
+            ("Snowflake Inc.", "SNOW")
         };
 
         var records = new List<ReportRecordModel>();
@@ -115,6 +130,7 @@ public class ApiClientMock : IApiClient
 
     public Task SendReportAsync(Guid id)
     {
+        // Mock implementation - just return completed task
         return Task.CompletedTask;
     }
 }

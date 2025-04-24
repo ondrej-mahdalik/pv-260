@@ -17,11 +17,12 @@ internal class EmailContentComponent(EmailOptions emailOption) : IContentCompone
         return panel;
     }
 
-    public void HandleInput(ConsoleKeyInfo key)
+    public Task HandleInput(ConsoleKeyInfo key)
     {
         if (key.Key == ConsoleKey.Backspace)
         {
             AnsiConsole.MarkupLine("[yellow]Returning to the email options...[/]");
         }
+        return Task.CompletedTask;
     }
 }

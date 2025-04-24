@@ -14,6 +14,8 @@ internal class ReportDetailComponent : IContentComponent
     private ReportDetailModel? _report;
     private string? _statusMessage;
     private readonly INavigationService _navigationService;
+    private int _currentPage = 1;
+    private const int PageSize = 10;
 
     public ReportDetailComponent(IApiClient apiClient, Guid reportId, INavigationService navigationService)
     {
@@ -38,6 +40,11 @@ internal class ReportDetailComponent : IContentComponent
                 .Expand();
         }
 
+        var records = _report.Records.ToList();
+        var totalPages = (int)Math.Ceiling(records.Count / (double)PageSize);
+        var skip = (_currentPage - 1) * PageSize;
+        var pageRecords = records.Skip(skip).Take(PageSize);
+
         var table = new Table()
             .Border(TableBorder.Rounded)
             .AddColumn("[bold]Company[/]")
@@ -47,7 +54,7 @@ internal class ReportDetailComponent : IContentComponent
             .AddColumn("[bold]Weight %[/]")
             .Expand();
 
-        foreach (var record in _report.Records)
+        foreach (var record in pageRecords)
         {
             var changeColor = record.SharesChangePercentage >= 0 ? "green" : "red";
             table.AddRow(
@@ -59,49 +66,85 @@ internal class ReportDetailComponent : IContentComponent
             );
         }
 
-        var panel = new Panel(table)
+        var mainPanel = new Panel(table)
             .Header($"[bold]Report Details: {_report.Name}[/]\nCreated: {_report.CreatedAt:g}")
             .Border(BoxBorder.Rounded)
             .Expand();
 
+        var paginationPanel = new Panel($"[yellow]Page {_currentPage}/{totalPages}[/]")
+            .Border(BoxBorder.Rounded);
+        paginationPanel.Height = 3;
+
+        var navigationPanel = new Panel("[yellow]Use ← and → to navigate[/]")
+            .Border(BoxBorder.Rounded);
+        navigationPanel.Height = 3;
+
+        var emailPanel = new Panel("[yellow]Press 'S' to send this report by email[/]")
+            .Border(BoxBorder.Rounded);
+        emailPanel.Height = 3;
+
         if (!string.IsNullOrEmpty(_statusMessage))
         {
+            var statusPanel = new Panel(_statusMessage)
+                .Border(BoxBorder.Rounded);
+            statusPanel.Height = 3;
+
             return new Layout()
                 .SplitRows(
-                    new Layout(panel),
-                    new Layout(new Panel(_statusMessage).Border(BoxBorder.Rounded))
+                    new Layout(mainPanel),
+                    new Layout(statusPanel)
                 );
         }
 
         return new Layout()
             .SplitRows(
-                new Layout(panel),
-                new Layout(new Panel("[yellow]Press 'S' to send this report by email[/]").Border(BoxBorder.Rounded))
+                new Layout(mainPanel),
+                new Layout()
+                    .SplitColumns(
+                        new Layout(paginationPanel),
+                        new Layout(navigationPanel),
+                        new Layout(emailPanel)
+                    )
             );
     }
 
-    public async void HandleInput(ConsoleKeyInfo key)
+    public async Task HandleInput(ConsoleKeyInfo key)
     {
-        if (key.Key == ConsoleKey.Backspace)
+        if (_report == null) return;
+
+        switch (key.Key)
         {
-            AnsiConsole.MarkupLine("[yellow]Returning to report list...[/]");
-        }
-        else if (key.Key == ConsoleKey.S)
-        {
-            _statusMessage = "[yellow]Sending report by email...[/]";
-            _navigationService.Push(this);
-            
-            try
-            {
-                await _apiClient.SendReportAsync(_reportId);
-                _statusMessage = "[green]Report sent successfully![/]";
-            }
-            catch (Exception ex)
-            {
-                _statusMessage = $"[red]Failed to send report: {ex.Message}[/]";
-            }
-            
-            _navigationService.Push(this);
+            case ConsoleKey.Backspace:
+                AnsiConsole.Clear();
+                _navigationService.Pop();
+                AnsiConsole.MarkupLine("[yellow]Returning to list reports...[/]");
+                break;
+            case ConsoleKey.S:
+                try
+                {
+                    _statusMessage = "[yellow]Sending report...[/]";
+                    await _apiClient.SendReportAsync(_reportId);
+                    _statusMessage = "[green]Report sent successfully![/]";
+                }
+                catch (Exception ex)
+                {
+                    _statusMessage = $"[red]Failed to send report: {ex.Message}[/]";
+                }
+                break;
+            case ConsoleKey.LeftArrow:
+                var totalPages = (int)Math.Ceiling(_report.Records.Count / (double)PageSize);
+                if (_currentPage > 1)
+                {
+                    _currentPage--;
+                }
+                break;
+            case ConsoleKey.RightArrow:
+                var totalPages2 = (int)Math.Ceiling(_report.Records.Count / (double)PageSize);
+                if (_currentPage < totalPages2)
+                {
+                    _currentPage++;
+                }
+                break;
         }
     }
 } 
