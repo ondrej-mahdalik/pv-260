@@ -1,18 +1,14 @@
 using PV260.Client.Mock;
 using PV260.Common.Models;
-using Moq;
 
 namespace PV260.Client.Tests;
-
 public class ApiClientMockTests
 {
     private readonly ApiClientMock _apiClient;
-    private readonly Mock<HttpClient> _httpClientMock;
 
     public ApiClientMockTests()
     {
-        _httpClientMock = new Mock<HttpClient>();
-        _apiClient = new ApiClientMock(_httpClientMock.Object);
+        _apiClient = new ApiClientMock();
     }
 
     [Fact]

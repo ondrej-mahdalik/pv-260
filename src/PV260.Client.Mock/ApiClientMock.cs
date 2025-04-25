@@ -2,18 +2,11 @@
 using PV260.Common.Models;
 
 namespace PV260.Client.Mock;
-
 public class ApiClientMock : IApiClient
 {
     private readonly List<ReportDetailModel> _reports = new();
     private readonly List<EmailRecipientModel> _emailRecipients = new();
     private readonly Random _random = new();
-    private readonly HttpClient _httpClient;
-
-    public ApiClientMock(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
 
     public Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
     {
@@ -122,6 +115,7 @@ public class ApiClientMock : IApiClient
 
     public Task SendReportAsync(Guid id)
     {
+        Task.Delay(2000);
         return Task.CompletedTask;
     }
 

@@ -76,7 +76,7 @@ internal class ReportsOptionsComponent : INavigationComponent
             .Expand();
     }
 
-    public async void HandleInput(ConsoleKeyInfo key, INavigationService navService)
+    public void HandleInput(ConsoleKeyInfo key, INavigationService navService)
     {
         if (key.Key == ConsoleKey.Enter)
         {
@@ -91,7 +91,7 @@ internal class ReportsOptionsComponent : INavigationComponent
                     {
                         _statusMessage = "[yellow]Generating new report...[/]";
                         
-                        await _apiClient.GenerateNewReportAsync();
+                        _apiClient.GenerateNewReportAsync();
                         _statusMessage = "[green]New report generated successfully![/]";
                     }
                     catch (HttpRequestException)
@@ -107,11 +107,11 @@ internal class ReportsOptionsComponent : INavigationComponent
                 case ReportOptions.DisplayLatestReport:
                     try
                     {
-                        var latestReport = await _apiClient.GetLatestReportAsync();
+                        var latestReport = _apiClient.GetLatestReportAsync().Result;
                         if (latestReport != null)
                         {
                             var detailComponent = new ReportDetailComponent(_apiClient, latestReport.Id, _navigationService);
-                            await detailComponent.LoadReportAsync();
+                            detailComponent.LoadReport();
                             navService.Push(detailComponent);
                         }
                         else
@@ -127,7 +127,7 @@ internal class ReportsOptionsComponent : INavigationComponent
 
                 case ReportOptions.ListReports:
                     var listComponent = new ReportsListComponent(_apiClient, _navigationService);
-                    await listComponent.LoadReportsAsync();
+                    listComponent.LoadReports();
                     navService.Push(listComponent);
                     break;
             }

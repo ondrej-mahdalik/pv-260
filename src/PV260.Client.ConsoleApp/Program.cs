@@ -15,13 +15,16 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logging => logging.ClearProviders())
     .ConfigureServices((context, services) =>
     {
-        var baseAddress = context.Configuration["ApiSettings:BaseAddress"];
-        if (string.IsNullOrEmpty(baseAddress))
-        {
-            throw new ArgumentNullException(nameof(baseAddress), "Base address cannot be null or empty.");
-        }
-
-        services.AddHttpClient<IApiClient, ApiClientMock>(client => { client.BaseAddress = new Uri(baseAddress); });
+        #if DEBUG_MOCK
+            services.AddSingleton<IApiClient, ApiClientMock>();
+        #else
+            var baseAddress = context.Configuration["ApiSettings:BaseAddress"];
+            if (string.IsNullOrEmpty(baseAddress))
+            {
+                throw new ArgumentNullException(nameof(baseAddress), "Base address cannot be null or empty.");
+            }
+            services.AddHttpClient<IApiClient, ApiClient>(client => { client.BaseAddress = new Uri(baseAddress); });
+        #endif
 
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IHeaderComponent, HeaderComponent>();

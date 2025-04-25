@@ -31,11 +31,11 @@ internal class ReportsListComponent : INavigationComponent
 
     public bool IsInSubMenu => true;
 
-    public async Task LoadReportsAsync()
+    public void LoadReports()
     {
         try
         {
-            _reports = await _apiClient.GetAllReportsAsync();
+            _reports = _apiClient.GetAllReportsAsync().Result.ToList();
             _errorMessage = null;
         }
         catch (HttpRequestException)
@@ -134,7 +134,7 @@ internal class ReportsListComponent : INavigationComponent
             );
     }
 
-    public async void HandleInput(ConsoleKeyInfo key, INavigationService navService)
+    public void HandleInput(ConsoleKeyInfo key, INavigationService navService)
     {
         switch (key.Key)
         {
@@ -147,19 +147,18 @@ internal class ReportsListComponent : INavigationComponent
                 
                 var selectedReport = reports[globalIndex];
                 var detailComponent = new ReportDetailComponent(_apiClient, selectedReport.Id, _navigationService);
-                await detailComponent.LoadReportAsync();
+                detailComponent.LoadReport();
                 navService.Push(detailComponent);
                 break;
             case ConsoleKey.LeftArrow:
-                var totalPages = (int)Math.Ceiling(_reports.Count() / (double)PageSize);
                 if (_currentPage > 1)
                 {
                     _currentPage--;
                 }
                 break;
             case ConsoleKey.RightArrow:
-                var totalPages2 = (int)Math.Ceiling(_reports.Count() / (double)PageSize);
-                if (_currentPage < totalPages2)
+                var totalPages = (int)Math.Ceiling(_reports.Count() / (double)PageSize);
+                if (_currentPage < totalPages)
                 {
                     _currentPage++;
                 }

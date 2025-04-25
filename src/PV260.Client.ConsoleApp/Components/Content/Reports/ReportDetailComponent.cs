@@ -26,9 +26,9 @@ internal class ReportDetailComponent : IContentComponent
 
     public bool IsInSubMenu => true;
 
-    public async Task LoadReportAsync()
+    public void LoadReport()
     {
-        _report = await _apiClient.GetReportByIdAsync(_reportId);
+        _report = _apiClient.GetReportByIdAsync(_reportId).Result;
     }
 
     public IRenderable Render()
@@ -121,21 +121,17 @@ internal class ReportDetailComponent : IContentComponent
                 break;
             case ConsoleKey.S:
                 _statusMessage = "[yellow]Sending report...[/]";
-                Task.Run(async () =>
+                try
                 {
-                    try
-                    {
-                        await _apiClient.SendReportAsync(_reportId);
-                        _statusMessage = "[green]Report sent successfully![/]";
-                    }
-                    catch (Exception ex)
-                    {
-                        _statusMessage = $"[red]Failed to send report: {ex.Message}[/]";
-                    }
-                });
+                    _apiClient.SendReportAsync(_reportId);
+                    _statusMessage = "[green]Report sent successfully![/]";
+                }
+                catch (Exception ex)
+                {
+                    _statusMessage = $"[red]Failed to send report: {ex.Message}[/]";
+                }
                 break;
             case ConsoleKey.LeftArrow:
-                var totalPages = (int)Math.Ceiling(_report.Records.Count / (double)PageSize);
                 if (_currentPage > 1)
                 {
                     _currentPage--;
