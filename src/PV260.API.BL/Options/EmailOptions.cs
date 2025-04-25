@@ -50,4 +50,9 @@ public record EmailOptions
     /// </list>
     /// </summary>
     public required string ReportEmailBodyTemplate { get; init; }
+    
+    /// <summary>
+    /// The API key for the email integration service (e.g., SendGrid).
+    /// </summary>
+    public required string IntegrationApiKey { get; init; }
 }

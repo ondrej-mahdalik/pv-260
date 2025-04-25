@@ -8,6 +8,7 @@ using PV260.Common.Models;
 using System.Globalization;
 using CsvHelper;
 using Microsoft.Extensions.Logging;
+using PV260.API.BL.Services;
 
 namespace PV260.API.BL.Facades;
 
@@ -16,12 +17,44 @@ public class ReportFacade(
     IMapper<ReportEntity, ReportListModel, ReportDetailModel> reportMapper,
     IUnitOfWorkFactory unitOfWorkFactory,
     IOptions<ReportOptions> reportOptions,
+    IOptions<EmailOptions> emailOptions,
+    IEmailFacade emailFacade,
+    IEmailService emailService,
     ILogger<ReportFacade> logger)
     : CrudFacadeBase<ReportListModel, ReportDetailModel, ReportEntity>(reportMapper, unitOfWorkFactory), IReportFacade
 {
+    private const string ReportNamePlaceholder = "{ReportName}";
+    private const string ReportTimestampPlaceholder = "{ReportTimestamp}";
+    private const string ReportRecordsPlaceholder = "{ReportRecords}";
+    
     private readonly IMapper<ReportEntity, ReportListModel, ReportDetailModel> _reportMapper = reportMapper;
+    private readonly IEmailFacade _emailFacade = emailFacade;
+    private readonly IEmailService _emailService = emailService;
     private readonly ReportOptions _reportOptions = reportOptions.Value;
+    private readonly EmailOptions _emailOptions = emailOptions.Value;
 
+    /// <inheritdoc />
+    public override async Task SaveAsync(ReportDetailModel model)
+    {
+        await using var unitOfWork = UnitOfWorkFactory.Create();
+        var reportRepository = unitOfWork.GetRepository<ReportEntity>();
+        var reportRecordRepository = unitOfWork.GetRepository<ReportRecordEntity>();
+
+        // Delete existing report records
+        var existingReportRecords = await reportRecordRepository.Get().Where(x => x.ReportId == model.Id).ToListAsync();
+        reportRecordRepository.DeleteRange(existingReportRecords);
+
+        // Save the report
+        var report = _reportMapper.ToEntity(model);
+        await reportRepository.AddOrUpdateAsync(report);
+
+        await unitOfWork.CommitAsync();
+    }
+    
+    /// <summary>
+    /// Gets the last generated report
+    /// </summary>
+    /// <returns>The last generated report</returns>
     public async Task<ReportDetailModel?> GetLatestAsync()
     {
         await using var uow = UnitOfWorkFactory.Create();
@@ -90,22 +123,34 @@ public class ReportFacade(
     }
 
     /// <inheritdoc />
-    public override async Task SaveAsync(ReportDetailModel model)
+    public async Task SendReportViaEmailAsync(Guid reportId)
     {
-        await using var unitOfWork = UnitOfWorkFactory.Create();
-        var reportRepository = unitOfWork.GetRepository<ReportEntity>();
-        var reportRecordRepository = unitOfWork.GetRepository<ReportRecordEntity>();
+        var report = await GetAsync(reportId);
+        if (report is null)
+            throw new InvalidOperationException($"Report with ID {reportId} was not found.");
+        
+        var recipients = await _emailFacade.GetAllEmailRecipientsAsync();
+        if (recipients.Count == 0)
+            return;
 
-        // Delete existing report records
-        var existingReportRecords = await reportRecordRepository.Get().Where(x => x.ReportId == model.Id).ToListAsync();
-        reportRecordRepository.DeleteRange(existingReportRecords);
+        var recordsText = report.Records.Aggregate(string.Empty,
+            (current, record) =>
+                current +
+                $"{record.CompanyName} ({record.Ticker}): weight {record.Weight}, {record.NumberOfShares} shares, {record.SharesChangePercentage}% change\n");
 
-        // Save the report
-        var report = _reportMapper.ToEntity(model);
-        await reportRepository.AddOrUpdateAsync(report);
+        var emailSubject = _emailOptions.ReportEmailSubjectTemplate
+            .Replace(ReportNamePlaceholder, report.Name)
+            .Replace(ReportTimestampPlaceholder, report.CreatedAt.ToString("g"));
+        
+        var emailBody = _emailOptions.ReportEmailBodyTemplate
+            .Replace(ReportNamePlaceholder, report.Name)
+            .Replace(ReportTimestampPlaceholder, report.CreatedAt.ToString("g"))
+            .Replace(ReportRecordsPlaceholder, recordsText);
 
-        await unitOfWork.CommitAsync();
+        await _emailService.SendEmailAsync(recipients.Select(recipient => recipient.EmailAddress).ToList(), emailSubject, emailBody);
     }
+
+    #region Report Generation
 
     private async Task<List<ReportRecordModel>> ParseCsvData(string csvData)
     {
@@ -142,11 +187,6 @@ public class ReportFacade(
         return reportRecords;
     }
 
-    private bool IsEndOfRelevantData(CsvReader csv)
-    {
-        return csv.Context.Parser?.RawRecord.Contains("Investors") ?? false;
-    }
-
     private ReportRecordModel CreateReportRecord(CsvReader csv, string ticker, Dictionary<string, ReportRecordModel> latestRecords)
     {
         var sharesField = csv.GetField<string>("shares") ?? "-1";
@@ -173,8 +213,13 @@ public class ReportFacade(
         
         return 0;
     }
+    
+    private static bool IsEndOfRelevantData(CsvReader csv)
+    {
+        return csv.Context.Parser?.RawRecord.Contains("Investors") ?? false;
+    }
 
-    private void AddMissingTickerRecords(Dictionary<string, ReportRecordModel> latestRecords, HashSet<string> currentTickers, List<ReportRecordModel> reportRecords)
+    private static void AddMissingTickerRecords(Dictionary<string, ReportRecordModel> latestRecords, HashSet<string> currentTickers, List<ReportRecordModel> reportRecords)
     {
         foreach (var latestTicker in latestRecords.Keys)
         {
@@ -205,4 +250,6 @@ public class ReportFacade(
             Records = reportRecords
         };
     }
+    
+    #endregion
 }
