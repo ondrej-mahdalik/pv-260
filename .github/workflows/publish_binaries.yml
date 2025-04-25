@@ -16,7 +16,6 @@ jobs:
           - target: osx-x64
 
     runs-on: self-hosted
-    environment: production
     env:
       DOTNET_INSTALL_DIR: "~/dotnet"
     steps:
@@ -67,7 +66,6 @@ jobs:
           - target: win-x64
           
     runs-on: self-hosted
-    environment: production
     env:
       DOTNET_INSTALL_DIR: "~/dotnet"
     steps:
@@ -107,7 +105,6 @@ jobs:
 
   release:
     runs-on: self-hosted
-    environment: production
     permissions: 
       contents: write
       packages: write
