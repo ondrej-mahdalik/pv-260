@@ -1,8 +1,6 @@
-using Moq;
-using PV260.Client.BL;
 using PV260.Client.Mock;
 using PV260.Common.Models;
-using Xunit;
+using Moq;
 
 namespace PV260.Client.Tests;
 
@@ -79,5 +77,92 @@ public class ApiClientMockTests
         var report = await _apiClient.GenerateNewReportAsync();
         var exception = await Record.ExceptionAsync(() => _apiClient.SendReportAsync(report.Id));
         Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task GetAllEmailsAsync_ReturnsAllEmails()
+    {
+        // Act
+        var emails = await _apiClient.GetAllEmailsAsync();
+        Assert.Empty(emails);
+
+        var emailRecipient = new EmailRecipientModel
+        {
+            EmailAddress = "test@example.com",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _apiClient.AddEmailAsync(emailRecipient);
+
+        emails = await _apiClient.GetAllEmailsAsync();
+
+        // Assert
+        Assert.Single(emails);
+        Assert.Equal("test@example.com", emails.First().EmailAddress);
+    }
+
+    [Fact]
+    public async Task AddEmailAsync_AddsEmail()
+    {
+        // Arrange
+        var emailRecipient = new EmailRecipientModel
+        {
+            EmailAddress = "test@example.com",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Act
+        await _apiClient.AddEmailAsync(emailRecipient);
+
+        // Assert
+        var emails = await _apiClient.GetAllEmailsAsync();
+        Assert.Contains(emails, e => e.EmailAddress == "test@example.com");
+    }
+
+    [Fact]
+    public async Task DeleteEmailAsync_RemovesSpecificEmail()
+    {
+        // Arrange
+        var emailRecipient = new EmailRecipientModel
+        {
+            EmailAddress = "test@example.com",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _apiClient.AddEmailAsync(emailRecipient);
+
+        // Act
+        await _apiClient.DeleteEmailAsync("test@example.com");
+
+        // Assert
+        var emails = await _apiClient.GetAllEmailsAsync();
+        Assert.DoesNotContain(emails, e => e.EmailAddress == "test@example.com");
+    }
+
+    [Fact]
+    public async Task DeleteAllEmailsAsync_RemovesAllEmails()
+    {
+        // Arrange
+        var emailRecipient1 = new EmailRecipientModel
+        {
+            EmailAddress = "test1@example.com",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var emailRecipient2 = new EmailRecipientModel
+        {
+            EmailAddress = "test2@example.com",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _apiClient.AddEmailAsync(emailRecipient1);
+        await _apiClient.AddEmailAsync(emailRecipient2);
+
+        // Act
+        await _apiClient.DeleteAllEmailsAsync();
+
+        // Assert
+        var emails = await _apiClient.GetAllEmailsAsync();
+        Assert.Empty(emails);
     }
 }

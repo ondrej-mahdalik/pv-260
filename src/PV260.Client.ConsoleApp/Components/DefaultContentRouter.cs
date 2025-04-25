@@ -7,7 +7,6 @@ using PV260.Client.ConsoleApp.Components.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
 
 namespace PV260.Client.ConsoleApp.Components;
-
 internal class DefaultContentRouter : IContentRouter
 {
     private readonly IApiClient _apiClient;
@@ -25,7 +24,7 @@ internal class DefaultContentRouter : IContentRouter
         {
             MenuItems.Home => new HomeContentComponent(),
             MenuItems.Reports => new ReportsOptionsComponent(_apiClient, _navigationService),
-            MenuItems.Emails => new EmailsOptionsComponent(),
+            MenuItems.Emails => new EmailsOptionsComponent(_apiClient),
             MenuItems.About => new AboutContentComponent(),
             _ => new HomeContentComponent()
         };

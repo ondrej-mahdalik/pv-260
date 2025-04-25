@@ -48,4 +48,27 @@ public interface IApiClient
     /// </summary>
     /// <param name="id">The unique identifier of the report to send.</param>
     Task SendReportAsync(Guid id);
+
+    /// <summary>
+    /// Retrieves all email recipients.
+    /// </summary>
+    /// <returns>A collection of <see cref="EmailRecipientModel"/>.</returns>
+    Task<IEnumerable<EmailRecipientModel>> GetAllEmailsAsync();
+
+    /// <summary>
+    /// Adds a new email recipient.
+    /// </summary>
+    /// <param name="emailRecipient">The email recipient to add.</param>
+    Task AddEmailAsync(EmailRecipientModel emailRecipient);
+
+    /// <summary>
+    /// Deletes a specific email recipient.
+    /// </summary>
+    /// <param name="email">The email address of the recipient to delete.</param>
+    Task DeleteEmailAsync(string email);
+
+    /// <summary>
+    /// Deletes all email recipients.
+    /// </summary>
+    Task DeleteAllEmailsAsync();
 }

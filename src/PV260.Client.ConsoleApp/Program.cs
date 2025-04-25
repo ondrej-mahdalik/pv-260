@@ -22,7 +22,7 @@ var host = Host.CreateDefaultBuilder(args)
         }
 
         services.AddHttpClient<IApiClient, ApiClientMock>(client => { client.BaseAddress = new Uri(baseAddress); });
-        
+
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IHeaderComponent, HeaderComponent>();
         services.AddSingleton<INavbarComponent, NavbarComponent>();

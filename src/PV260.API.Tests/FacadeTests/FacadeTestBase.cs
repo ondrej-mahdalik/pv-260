@@ -1,4 +1,5 @@
-﻿using PV260.API.BL.Facades;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using PV260.API.BL.Facades;
 using PV260.API.BL.Mappers;
 using PV260.API.DAL.Entities;
 using PV260.API.DAL.UnitOfWork;
@@ -49,11 +50,12 @@ public abstract class FacadeTestBase : IAsyncLifetime
             ArkFundsCsvUrl = "https://assets.ark-funds.com/fund-documents/funds-etf-csv/ARK_INNOVATION_ETF_ARKK_HOLDINGS.csv"
         });
 
-        ReportFacadeSut = new ReportFacade(ReportRecordMapper, ReportMapper, UnitOfWorkFactory, reportOptions);
+        ReportFacadeSut = new ReportFacade(ReportMapper, UnitOfWorkFactory, reportOptions, new NullLogger<ReportFacade>());
         EmailFacadeSut = new EmailFacade(EmailRecipientMapper, UnitOfWorkFactory);
 
         await using var dbContext = _dbContextFactory.CreateDbContext();
         await dbContext.Database.EnsureCreatedAsync();
+        
         // Seed data
         await EmailEntitySeeds.SeedAsync(dbContext);
         await ReportEntitySeeds.SeedAsync(dbContext);
