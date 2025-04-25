@@ -233,6 +233,62 @@ namespace PV260.Client.Tests
                 ItExpr.IsAny<CancellationToken>());
         }
 
+        [Fact]
+        public async Task AddEmailAsync_AddsEmail()
+        {
+            // Arrange
+            var emailRecipient = new EmailRecipientModel
+            {
+                EmailAddress = "test@example.com",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _httpMessageHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Post),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            // Act
+            await _apiClient.AddEmailAsync(emailRecipient);
+
+            // Assert
+            _httpMessageHandlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Post),
+                ItExpr.IsAny<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task DeleteAllEmailsAsync_RemovesAllEmails()
+        {
+            // Arrange
+            _httpMessageHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Delete),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.NoContent
+                });
+
+            // Act
+            await _apiClient.DeleteAllEmailsAsync();
+
+            // Assert
+            _httpMessageHandlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Delete),
+                ItExpr.IsAny<CancellationToken>());
+        }
+
         // [Fact]
         // public async Task GetSettingsAsync_ReturnsSettings()
         // {

@@ -4,5 +4,10 @@ internal enum EmailOptions
 {
     SendEmail,
     DisplayLatestEmail,
-    ListEmails
+    ListEmails,
+    ListEmailRecipients,
+    AddEmailRecipient,
+    RemoveEmailRecipient,
+    ClearEmailRecipients,
+
 }

@@ -1,5 +1,6 @@
-﻿using System.Net.Http.Json;
-using PV260.Common.Models;
+﻿using PV260.Common.Models;
+using System.Net.Http;
+using System.Net.Http.Json;
 
 namespace PV260.Client.BL;
 
@@ -55,4 +56,32 @@ public class ApiClient(HttpClient httpClient) : IApiClient
         var response = await httpClient.PostAsJsonAsync($"Report/{id}/send", new { });
         response.EnsureSuccessStatusCode();
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<EmailRecipientModel>> GetAllEmailsAsync()
+    {
+        return await httpClient.GetFromJsonAsync<IEnumerable<EmailRecipientModel>>("Email") ?? new List<EmailRecipientModel>();
+    }
+
+    /// <inheritdoc />
+    public async Task AddEmailAsync(EmailRecipientModel emailRecipient)
+    {
+        var response = await httpClient.PostAsJsonAsync("Email", emailRecipient);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteEmailAsync(string email)
+    {
+        var response = await httpClient.PostAsJsonAsync("Email", email);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteAllEmailsAsync()
+    {
+        var response = await httpClient.DeleteAsync("Email/all");
+        response.EnsureSuccessStatusCode();
+    }
+
 }
