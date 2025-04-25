@@ -2,5 +2,5 @@
 
 internal interface IContentComponent : IRenderableComponent
 {
-    Task HandleInput(ConsoleKeyInfo key);
+    void HandleInput(ConsoleKeyInfo key);
 }

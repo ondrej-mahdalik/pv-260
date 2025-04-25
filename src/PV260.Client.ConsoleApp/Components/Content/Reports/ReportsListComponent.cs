@@ -111,7 +111,7 @@ internal class ReportsListComponent : INavigationComponent
             .Border(BoxBorder.Rounded);
         paginationPanel.Height = 3;
 
-        var navigationPanel = new Panel("[yellow]Use ← and → to navigate[/]")
+        var navigationPanel = new Panel("[yellow]Use <- and -> to navigate[/]")
             .Border(BoxBorder.Rounded);
         navigationPanel.Height = 3;
 

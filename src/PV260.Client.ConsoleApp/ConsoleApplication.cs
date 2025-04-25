@@ -44,14 +44,14 @@ internal class ConsoleApplication(
 
             var key = Console.ReadKey(true);
 
-            DelegateNavigation(component, key).Wait();
+            DelegateNavigation(component, key);
         }
 
         AnsiConsole.Clear();
         AnsiConsole.MarkupLine("[green]Thanks for using PV260 Report Generator![/]");
     }
 
-    private async Task DelegateNavigation(IRenderableComponent component, ConsoleKeyInfo key)
+    private void DelegateNavigation(IRenderableComponent component, ConsoleKeyInfo key)
     {
         if (key.Key == ConsoleKey.Escape)
         {
@@ -72,7 +72,7 @@ internal class ConsoleApplication(
         }
         else if (component is IContentComponent contentComponent)
         {
-            await contentComponent.HandleInput(key);
+            contentComponent.HandleInput(key);
         }
     }
 

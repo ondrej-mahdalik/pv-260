@@ -90,7 +90,6 @@ internal class ReportsOptionsComponent : INavigationComponent
                     try
                     {
                         _statusMessage = "[yellow]Generating new report...[/]";
-                        _navigationService.Push(this);
                         
                         await _apiClient.GenerateNewReportAsync();
                         _statusMessage = "[green]New report generated successfully![/]";
@@ -103,7 +102,6 @@ internal class ReportsOptionsComponent : INavigationComponent
                     {
                         _statusMessage = $"[red]Failed to generate report: {ex.Message}[/]";
                     }
-                    _navigationService.Push(this);
                     break;
 
                 case ReportOptions.DisplayLatestReport:
@@ -119,13 +117,11 @@ internal class ReportsOptionsComponent : INavigationComponent
                         else
                         {
                             _statusMessage = "[yellow]No reports available[/]";
-                            _navigationService.Push(this);
                         }
                     }
                     catch (HttpRequestException)
                     {
                         _statusMessage = "[red]Unable to connect to the server. Please make sure the API server is running.[/]";
-                        _navigationService.Push(this);
                     }
                     break;
 

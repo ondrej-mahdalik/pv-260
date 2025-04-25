@@ -75,7 +75,7 @@ internal class ReportDetailComponent : IContentComponent
             .Border(BoxBorder.Rounded);
         paginationPanel.Height = 3;
 
-        var navigationPanel = new Panel("[yellow]Use ← and → to navigate[/]")
+        var navigationPanel = new Panel("[yellow]Use <- and -> to navigate[/]")
             .Border(BoxBorder.Rounded);
         navigationPanel.Height = 3;
 
@@ -108,7 +108,7 @@ internal class ReportDetailComponent : IContentComponent
             );
     }
 
-    public async Task HandleInput(ConsoleKeyInfo key)
+    public void HandleInput(ConsoleKeyInfo key)
     {
         if (_report == null) return;
 
@@ -120,16 +120,19 @@ internal class ReportDetailComponent : IContentComponent
                 AnsiConsole.MarkupLine("[yellow]Returning to list reports...[/]");
                 break;
             case ConsoleKey.S:
-                try
+                _statusMessage = "[yellow]Sending report...[/]";
+                Task.Run(async () =>
                 {
-                    _statusMessage = "[yellow]Sending report...[/]";
-                    await _apiClient.SendReportAsync(_reportId);
-                    _statusMessage = "[green]Report sent successfully![/]";
-                }
-                catch (Exception ex)
-                {
-                    _statusMessage = $"[red]Failed to send report: {ex.Message}[/]";
-                }
+                    try
+                    {
+                        await _apiClient.SendReportAsync(_reportId);
+                        _statusMessage = "[green]Report sent successfully![/]";
+                    }
+                    catch (Exception ex)
+                    {
+                        _statusMessage = $"[red]Failed to send report: {ex.Message}[/]";
+                    }
+                });
                 break;
             case ConsoleKey.LeftArrow:
                 var totalPages = (int)Math.Ceiling(_report.Records.Count / (double)PageSize);
