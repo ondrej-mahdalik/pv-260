@@ -21,7 +21,7 @@ public class ApiClientMockTests
     public async Task GetAllReportsAsync_ReturnsEmptyList_Initially()
     {
         var reports = await _apiClient.GetAllReportsAsync();
-        Assert.Empty(reports.Items);
+        Assert.Empty(reports);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class ApiClientMockTests
         await _apiClient.GenerateNewReportAsync();
         await _apiClient.DeleteAllReportsAsync();
         var reports = await _apiClient.GetAllReportsAsync();
-        Assert.Empty(reports.Items);
+        Assert.Empty(reports);
     }
 
     [Fact]

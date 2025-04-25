@@ -9,10 +9,9 @@ namespace PV260.Client.BL;
 public class ApiClient(HttpClient httpClient) : IApiClient
 {
     /// <inheritdoc />
-    public async Task<PaginatedResult<ReportListModel>> GetAllReportsAsync(int page = 1, int pageSize = 10)
+    public async Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
     {
-        return await httpClient.GetFromJsonAsync<PaginatedResult<ReportListModel>>($"Report?page={page}&pageSize={pageSize}") 
-            ?? new PaginatedResult<ReportListModel> { Items = [], TotalCount = 0, Page = page, PageSize = pageSize };
+        return await httpClient.GetFromJsonAsync<IEnumerable<ReportListModel>>("Report") ?? new List<ReportListModel>();
     }
 
     /// <inheritdoc />

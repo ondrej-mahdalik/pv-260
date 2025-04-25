@@ -13,7 +13,7 @@ public class ApiClientMock : IApiClient
         _httpClient = httpClient;
     }
 
-    public Task<PaginatedResult<ReportListModel>> GetAllReportsAsync(int page = 1, int pageSize = 10)
+    public Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
     {
         var listModels = _reports.Select(r => new ReportListModel
         {
@@ -22,17 +22,7 @@ public class ApiClientMock : IApiClient
             Name = r.Name
         }).ToList();
         
-        // Apply pagination
-        var skip = (page - 1) * pageSize;
-        var paginatedReports = listModels.Skip(skip).Take(pageSize);
-        
-        return Task.FromResult(new PaginatedResult<ReportListModel>
-        {
-            Items = paginatedReports,
-            TotalCount = listModels.Count,
-            Page = page,
-            PageSize = pageSize
-        });
+        return Task.FromResult<IEnumerable<ReportListModel>>(listModels);
     }
 
     public Task<ReportDetailModel?> GetReportByIdAsync(Guid id)
