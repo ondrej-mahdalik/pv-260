@@ -71,6 +71,7 @@ jobs:
             echo "API_PORT=${{ vars.API_PORT }}" >> ~/pv260-production/.env
             echo "IMAGE_NAME=${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}" >> ~/pv260-production/.env
             echo "DB_SA_PASSWORD=${{ secrets.DB_SA_PASSWORD }}" >> ~/pv260-production/.env
+            echo "EMAIL_API_KEY=${{ secrets.EMAIL_API_KEY }}" >> ~/pv260-production/.env
 
       - name: Copy docker-compose file to the Production server
         uses: appleboy/scp-action@v0.1.7

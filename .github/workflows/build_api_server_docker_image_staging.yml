@@ -71,6 +71,7 @@ jobs:
             echo "API_PORT=${{ vars.API_PORT }}" >> ~/pv260-staging/.env
             echo "IMAGE_NAME=${{ env.REGISTRY }}/${{ vars.IMAGE_NAME }}" >> ~/pv260-staging/.env
             echo "DB_SA_PASSWORD=${{ secrets.DB_SA_PASSWORD }}" >> ~/pv260-staging/.env
+            echo "EMAIL_API_KEY=${{ secrets.EMAIL_API_KEY }}" >> ~/pv260-staging/.env
 
       - name: Copy docker-compose file to the Staging server
         uses: appleboy/scp-action@v0.1.7
