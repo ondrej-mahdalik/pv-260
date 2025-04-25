@@ -10,9 +10,6 @@ internal class EmailsOptionsComponent : INavigationComponent
 {
     private readonly EmailOptions[] _emailOptions =
     [
-        EmailOptions.SendEmail,
-        EmailOptions.DisplayLatestEmail,
-        EmailOptions.ListEmails,
         EmailOptions.ListEmailRecipients,
         EmailOptions.AddEmailRecipient,
         EmailOptions.RemoveEmailRecipient,
