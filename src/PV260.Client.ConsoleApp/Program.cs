@@ -6,6 +6,8 @@ using PV260.Client.BL;
 using PV260.Client.ConsoleApp;
 using PV260.Client.ConsoleApp.Components;
 using PV260.Client.ConsoleApp.Components.Interfaces;
+using PV260.Client.ConsoleApp.Components.Navigation;
+using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
 using PV260.Client.Mock;
 
 var host = Host.CreateDefaultBuilder(args)
@@ -13,14 +15,18 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logging => logging.ClearProviders())
     .ConfigureServices((context, services) =>
     {
-        var baseAddress = context.Configuration["ApiSettings:BaseAddress"];
-        if (string.IsNullOrEmpty(baseAddress))
-        {
-            throw new ArgumentNullException(nameof(baseAddress), "Base address cannot be null or empty.");
-        }
+        #if DEBUG_MOCK
+            services.AddSingleton<IApiClient, ApiClientMock>();
+        #else
+            var baseAddress = context.Configuration["ApiSettings:BaseAddress"];
+            if (string.IsNullOrEmpty(baseAddress))
+            {
+                throw new ArgumentNullException(nameof(baseAddress), "Base address cannot be null or empty.");
+            }
+            services.AddHttpClient<IApiClient, ApiClient>(client => { client.BaseAddress = new Uri(baseAddress); });
+        #endif
 
-        services.AddHttpClient<IApiClient, ApiClientMock>(client => { client.BaseAddress = new Uri(baseAddress); });
-
+        services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IHeaderComponent, HeaderComponent>();
         services.AddSingleton<INavbarComponent, NavbarComponent>();
         services.AddSingleton<IFooterComponent, FooterComponent>();

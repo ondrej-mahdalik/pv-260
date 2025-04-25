@@ -1,23 +1,25 @@
 ﻿using PV260.Client.ConsoleApp.Components.Enums;
 using PV260.Client.ConsoleApp.Components.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation;
+using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
 using Spectre.Console;
 
 namespace PV260.Client.ConsoleApp;
 
 internal class ConsoleApplication(
     ILayoutBuilder layoutBuilder,
-    IContentRouter contentRouter)
+    IContentRouter contentRouter,
+    INavigationService navigationService)
 {
     private readonly IContentRouter _contentRouter = contentRouter;
     private readonly ILayoutBuilder _layoutBuilder = layoutBuilder;
+    private readonly INavigationService _navigationService = navigationService;
 
     private readonly MenuItems[] _mainMenuItems =
     [
         MenuItems.Home, MenuItems.Reports, MenuItems.Emails, MenuItems.About
     ];
 
-    private readonly NavigationService _navigationService = new();
     private int _mainSelected;
     private bool _running = true;
 
@@ -57,28 +59,20 @@ internal class ConsoleApplication(
             return;
         }
 
+        if (!component.IsInSubMenu)
+        {
+            HandleMainNavigation(key);
+            return;
+        }
+
         if (component is INavigationComponent navComponent)
         {
             navComponent.Navigate(key.Key);
             navComponent.HandleInput(key, _navigationService);
-
-            if (key.Key == ConsoleKey.Backspace)
-            {
-                if (_navigationService.CanGoBack)
-                {
-                    _navigationService.Pop();
-                }
-            }
         }
-        else if (component is IContentComponent &&
-                 _navigationService.LastNavigationComponent is INavigationComponent navigationComponent)
+        else if (component is IContentComponent contentComponent)
         {
-            navigationComponent.HandleInput(key, _navigationService);
-        }
-
-        else if (!component.IsInSubMenu)
-        {
-            HandleMainNavigation(key);
+            contentComponent.HandleInput(key);
         }
     }
 
@@ -100,7 +94,6 @@ internal class ConsoleApplication(
                 {
                     _navigationService.Pop();
                 }
-
                 break;
         }
     }
