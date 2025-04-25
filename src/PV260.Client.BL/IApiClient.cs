@@ -7,7 +7,7 @@ namespace PV260.Client.BL;
 /// </summary>
 public interface IApiClient
 {
-    /// <summary>
+   /// <summary>
     /// Retrieves all reports.
     /// </summary>
     /// <returns>A collection of <see cref="ReportListModel"/>.</returns>

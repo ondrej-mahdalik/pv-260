@@ -1,4 +1,5 @@
-﻿using PV260.Client.ConsoleApp.Components.Interfaces;
+﻿using PV260.Client.BL;
+using PV260.Client.ConsoleApp.Components.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -7,12 +8,21 @@ namespace PV260.Client.ConsoleApp.Components.Content.Reports;
 
 internal class ReportsOptionsComponent : INavigationComponent
 {
+    private readonly IApiClient _apiClient;
+    private readonly INavigationService _navigationService;
     private readonly ReportOptions[] _reportOptions =
     [
         ReportOptions.GenerateNewReport,
         ReportOptions.DisplayLatestReport,
         ReportOptions.ListReports
     ];
+    private string? _statusMessage;
+
+    public ReportsOptionsComponent(IApiClient apiClient, INavigationService navigationService)
+    {
+        _apiClient = apiClient;
+        _navigationService = navigationService;
+    }
 
     public int SelectedIndex { get; private set; }
 
@@ -29,9 +39,11 @@ internal class ReportsOptionsComponent : INavigationComponent
         {
             case ConsoleKey.UpArrow:
                 SelectedIndex = (SelectedIndex - 1 + _reportOptions.Length) % _reportOptions.Length;
+                _statusMessage = null;
                 break;
             case ConsoleKey.DownArrow:
                 SelectedIndex = (SelectedIndex + 1) % _reportOptions.Length;
+                _statusMessage = null;
                 break;
         }
     }
@@ -52,6 +64,12 @@ internal class ReportsOptionsComponent : INavigationComponent
             table.AddRow(text);
         }
 
+        if (!string.IsNullOrEmpty(_statusMessage))
+        {
+            table.AddRow("");
+            table.AddRow(_statusMessage);
+        }
+
         return new Panel(table)
             .Header("Reports", Justify.Center)
             .Border(BoxBorder.Rounded)
@@ -66,19 +84,59 @@ internal class ReportsOptionsComponent : INavigationComponent
 
             var selectedOption = _reportOptions[SelectedIndex];
 
-            var reportsContentComponent = new ReportsContentComponent(selectedOption);
+            switch (selectedOption)
+            {
+                case ReportOptions.GenerateNewReport:
+                    try
+                    {
+                        _statusMessage = "[yellow]Generating new report...[/]";
+                        
+                        _apiClient.GenerateNewReportAsync();
+                        _statusMessage = "[green]New report generated successfully![/]";
+                    }
+                    catch (HttpRequestException)
+                    {
+                        _statusMessage = "[red]Unable to connect to the server. Please make sure the API server is running.[/]";
+                    }
+                    catch (Exception ex)
+                    {
+                        _statusMessage = $"[red]Failed to generate report: {ex.Message}[/]";
+                    }
+                    break;
 
-            navService.Push(reportsContentComponent);
+                case ReportOptions.DisplayLatestReport:
+                    try
+                    {
+                        var latestReport = _apiClient.GetLatestReportAsync().Result;
+                        if (latestReport != null)
+                        {
+                            var detailComponent = new ReportDetailComponent(_apiClient, latestReport.Id, _navigationService);
+                            detailComponent.LoadReport();
+                            navService.Push(detailComponent);
+                        }
+                        else
+                        {
+                            _statusMessage = "[yellow]No reports available[/]";
+                        }
+                    }
+                    catch (HttpRequestException)
+                    {
+                        _statusMessage = "[red]Unable to connect to the server. Please make sure the API server is running.[/]";
+                    }
+                    break;
 
-            AnsiConsole.MarkupLine($"[green]You have selected to:[/] {selectedOption}");
+                case ReportOptions.ListReports:
+                    var listComponent = new ReportsListComponent(_apiClient, _navigationService);
+                    listComponent.LoadReports();
+                    navService.Push(listComponent);
+                    break;
+            }
         }
         else if (key.Key == ConsoleKey.Backspace)
         {
             AnsiConsole.Clear();
-
             navService.Pop();
-
-            AnsiConsole.MarkupLine("[yellow]Returning to previous menu...[/]");
+            AnsiConsole.MarkupLine("[yellow]Returning to main menu...[/]");
         }
     }
 }
