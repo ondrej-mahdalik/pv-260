@@ -23,6 +23,9 @@ services:
     environment:
       - DOTNET_ENVIRONMENT=Production
       - DalSettings__ConnectionString=Server=pv260.api.db.production;Database=PV260;User Id=sa;Password=${DB_SA_PASSWORD};TrustServerCertificate=True;
+      - EmailSettings__IntegrationApiKey=${EMAIL_API_KEY}
+      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Microsoft=Warning
     depends_on:
       - pv260.api.db.production
     networks:

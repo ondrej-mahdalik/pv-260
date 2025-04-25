@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Moq;
 using PV260.API.DAL.Entities;
 using PV260.API.Tests.Seeds;
 using PV260.Common.Models;
@@ -174,5 +175,37 @@ public class ReportFacadeTests : FacadeTestBase
         // Assert
         Assert.Equal(1, deletedCount);
         Assert.False(await reportRepository.Get().AnyAsync(r => r.Id == oldReport.Id));
+    }
+
+    [Fact]
+    public async Task SendReportViaEmailAsync_CallsEmailServiceWithCorrectParameters()
+    {
+        // Arrange
+        EmailServiceMock.Setup(action => action.SendEmailAsync(It.IsAny<IList<string>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+        var reportId = ReportEntitySeeds.Entity1.Id;
+        
+        // Act
+        await ReportFacadeSut.SendReportViaEmailAsync(reportId);
+        
+        // Assert
+        List<string> recipientAddresses =
+        [
+            EmailEntitySeeds.Entity1.EmailAddress,
+            EmailEntitySeeds.Entity2.EmailAddress
+        ];
+        EmailServiceMock.Verify(
+            action => action.SendEmailAsync(recipientAddresses, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+    
+    [Fact]
+    public async Task SendReportViaEmailAsync_ThrowsException_WhenReportNotFound()
+    {
+        // Arrange
+        var nonExistingReportId = Guid.NewGuid();
+        
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await ReportFacadeSut.SendReportViaEmailAsync(nonExistingReportId));
     }
 }

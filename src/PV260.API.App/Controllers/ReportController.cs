@@ -72,7 +72,7 @@ public class ReportController(IReportFacade reportFacade) : ControllerBase
     [EndpointDescription("Sends an email to all recipients with the report details")]
     public async Task<ActionResult> SendReport(Guid id)
     {
-        // TODO Call the report facade to send the report here once implemented
-        return BadRequest("Not implemented");
+        await reportFacade.SendReportViaEmailAsync(id);
+        return Ok();
     }
 }
