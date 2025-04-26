@@ -50,7 +50,7 @@ internal class ReportListComponent(IApiClient apiClient) : INavigationComponent
         {
             return new ReportOptionPanelBuilder()
                 .WithHeader(HeaderName)
-                .WithError("There was an error getting reports. Please try again", MessageSize.Expanded)
+                .WithError("There was an error getting reports. Please try again", MessageSize.TableRow)
                 .Build();
         }
 

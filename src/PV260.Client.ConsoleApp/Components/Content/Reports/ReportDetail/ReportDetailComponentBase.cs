@@ -23,7 +23,7 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : INavig
         {
             return new ReportDetailPanelBuilder()
                 .WithHeader(GetHeader())
-                .WithError("There was an error getting report. Please try again", MessageSize.Expanded)
+                .WithError("There was an error getting report. Please try again", MessageSize.TableRow)
                 .Build();
         }
 
