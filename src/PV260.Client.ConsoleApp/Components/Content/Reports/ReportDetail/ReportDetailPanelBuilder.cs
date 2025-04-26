@@ -1,25 +1,17 @@
 ﻿using System.Globalization;
+using PV260.Client.ConsoleApp.Components.Content.Common;
 using PV260.Common.Models;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
-namespace PV260.Client.ConsoleApp.Components.Content.Reports.LatestGeneratedReport;
+namespace PV260.Client.ConsoleApp.Components.Content.Reports.ReportDetail;
 
-internal class LatestReportPanelBuilder
+internal class ReportDetailPanelBuilder : PanelBuilderBase<ReportDetailPanelBuilder>
 {
     private Table? _detailsTable;
-    private Panel? _error;
-    private string _header = string.Empty;
     private Table? _summaryTable;
 
-    public LatestReportPanelBuilder WithHeader(string header)
-    {
-        _header = header;
-
-        return this;
-    }
-
-    public LatestReportPanelBuilder WithSummary(string name, DateTime createdAt)
+    public ReportDetailPanelBuilder WithSummary(string name, DateTime createdAt)
     {
         _summaryTable = new Table().Border(TableBorder.Rounded).Expand();
         _summaryTable.AddColumn(new TableColumn("[bold green]Name[/]").Centered());
@@ -33,7 +25,7 @@ internal class LatestReportPanelBuilder
         return this;
     }
 
-    public LatestReportPanelBuilder WithDetails(IEnumerable<ReportRecordModel> records)
+    public ReportDetailPanelBuilder WithDetails(IEnumerable<ReportRecordModel> records)
     {
         _detailsTable = new Table()
             .Border(TableBorder.Square)
@@ -60,22 +52,8 @@ internal class LatestReportPanelBuilder
         return this;
     }
 
-    public LatestReportPanelBuilder WithError(string errorMessage)
+    protected override void FillContent(List<IRenderable> rows)
     {
-        _error = new Panel($"[bold red]{errorMessage}[/]").Expand();
-
-        return this;
-    }
-
-    public IRenderable Build()
-    {
-        var rows = new List<IRenderable>();
-
-        if (_error is not null)
-        {
-            rows.Add(_error);
-        }
-
         if (_summaryTable is not null)
         {
             rows.Add(_summaryTable);
@@ -85,18 +63,5 @@ internal class LatestReportPanelBuilder
         {
             rows.Add(_detailsTable);
         }
-
-        var layout = new Rows(rows);
-
-        var panel = new Panel(layout)
-            .Border(BoxBorder.Rounded)
-            .Expand();
-
-        if (!string.IsNullOrEmpty(_header))
-        {
-            panel.Header($"[bold green]{_header}[/]", Justify.Center);
-        }
-
-        return panel;
     }
 }
