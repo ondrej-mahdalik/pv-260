@@ -7,5 +7,5 @@ internal interface INavigationComponent : IRenderableComponent
     int SelectedIndex { get; }
     string[] NavigationItems { get; }
     void Navigate(ConsoleKey key);
-    void HandleInput(ConsoleKeyInfo key, INavigationService navigationService);
+    void HandleInput(ConsoleKey key, INavigationService navigationService);
 }

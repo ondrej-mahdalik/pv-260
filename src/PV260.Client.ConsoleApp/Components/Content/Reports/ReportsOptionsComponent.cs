@@ -72,10 +72,12 @@ internal class ReportsOptionsComponent : INavigationComponent
             .Expand();
     }
 
-    public void HandleInput(ConsoleKeyInfo key, INavigationService navService)
+    public void HandleInput(ConsoleKey key, INavigationService navigationService)
     {
-        if (key.Key == ConsoleKey.Enter)
+        switch (key)
         {
+            case ConsoleKey.Enter:
+            {
             AnsiConsole.Clear();
 
             var selectedOption = _reportOptions[SelectedIndex];
@@ -128,7 +130,7 @@ internal class ReportsOptionsComponent : INavigationComponent
                     break;
             }
         }
-        else if (key.Key == ConsoleKey.Backspace)
+            case ConsoleKey.Backspace:
         {
             AnsiConsole.Clear();
             navService.Pop();

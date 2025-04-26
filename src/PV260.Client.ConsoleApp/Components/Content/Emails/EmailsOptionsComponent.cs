@@ -42,9 +42,9 @@ internal class EmailsOptionsComponent : INavigationComponent
         }
     }
 
-    public void HandleInput(ConsoleKeyInfo key, INavigationService navigationService)
+    public void HandleInput(ConsoleKey key, INavigationService navigationService)
     {
-        if (key.Key == ConsoleKey.Enter)
+        if (key == ConsoleKey.Enter)
         {
             AnsiConsole.Clear();
 
@@ -57,7 +57,7 @@ internal class EmailsOptionsComponent : INavigationComponent
 
             AnsiConsole.MarkupLine($"[green]You have selected to:[/] {selectedOption}");
         }
-        else if (key.Key == ConsoleKey.Backspace)
+        else if (key == ConsoleKey.Backspace)
         {
             AnsiConsole.Clear();
 
