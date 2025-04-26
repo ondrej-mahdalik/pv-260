@@ -7,7 +7,7 @@ using PV260.Common.Models;
 namespace PV260.API.BL.Facades;
 
 /// <inheritdoc />
-public class EmailFacade(
+public class EmailRecipientFacade(
     IMapper<EmailRecipientEntity, EmailRecipientModel, EmailRecipientModel> emailMapper,
     IUnitOfWorkFactory unitOfWorkFactory) : IEmailFacade
 {

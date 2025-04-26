@@ -1,7 +1,9 @@
 ﻿using Coravel;
 using Microsoft.Extensions.DependencyInjection;
 using PV260.API.BL.Facades;
+using PV260.API.BL.Invocables;
 using PV260.API.BL.Mappers;
+using PV260.API.BL.Services;
 using PV260.API.DAL.Entities;
 using PV260.Common.Models;
 
@@ -18,6 +20,9 @@ public static class ServiceCollectionExtensions
     /// <param name="serviceCollection">The service collection to which the services will be added.</param>
     public static IServiceCollection AddDBlServices(this IServiceCollection serviceCollection)
     {
+        // Services
+        serviceCollection.AddSingleton<IEmailService, SendgridEmailService>();
+        
         // Mappers
         serviceCollection.AddSingleton<IMapper<ReportEntity, ReportListModel, ReportDetailModel>, ReportMapper>();
         serviceCollection.AddSingleton<IMapper<ReportRecordEntity, ReportRecordModel, ReportRecordModel>, ReportRecordMapper>();
@@ -25,7 +30,11 @@ public static class ServiceCollectionExtensions
         
         // Facades
         serviceCollection.AddSingleton<IReportFacade, ReportFacade>();
-        serviceCollection.AddSingleton<IEmailFacade, EmailFacade>();
+        serviceCollection.AddSingleton<IEmailFacade, EmailRecipientFacade>();
+        
+        // Invocables
+        serviceCollection.AddTransient<GenerateReportInvocable>();
+        serviceCollection.AddTransient<DeleteOldReportsInvocable>();
         
         // Scheduling
         serviceCollection.AddScheduler();

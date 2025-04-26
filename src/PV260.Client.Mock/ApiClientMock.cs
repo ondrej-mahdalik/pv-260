@@ -5,126 +5,9 @@ namespace PV260.Client.Mock;
 
 public class ApiClientMock : IApiClient
 {
-    private readonly List<ReportDetailModel> _reports =
-    [
-        new()
-        {
-            Id = Guid.NewGuid(),
-            Name = "Q1 2025 Performance",
-            CreatedAt = new DateTime(2025, 4, 1),
-            Records =
-            [
-                new ReportRecordModel
-                {
-                    Id = Guid.NewGuid(),
-                    CompanyName = "Contoso Ltd",
-                    Ticker = "CTSO",
-                    NumberOfShares = 1500,
-                    SharesChangePercentage = 3.5,
-                    Weight = 12.4
-                },
-                new ReportRecordModel
-                {
-                    Id = Guid.NewGuid(),
-                    CompanyName = "Fabrikam Inc",
-                    Ticker = "FBKM",
-                    NumberOfShares = 2300,
-                    SharesChangePercentage = -1.2,
-                    Weight = 8.9
-                }
-            ]
-        },
-        new()
-        {
-            Id = Guid.NewGuid(),
-            Name = "Q4 2024 Overview",
-            CreatedAt = new DateTime(2025, 1, 15),
-            Records =
-            [
-                new ReportRecordModel
-                {
-                    Id = Guid.NewGuid(),
-                    CompanyName = "Northwind Traders",
-                    Ticker = "NWTR",
-                    NumberOfShares = 1800,
-                    SharesChangePercentage = 0.75,
-                    Weight = 10.2
-                },
-                new ReportRecordModel
-                {
-                    Id = Guid.NewGuid(),
-                    CompanyName = "Lucerne Publishing",
-                    Ticker = "LCPB",
-                    NumberOfShares = 1200,
-                    SharesChangePercentage = 2.0,
-                    Weight = 7.3
-                }
-            ]
-        },
-        new()
-        {
-            Id = Guid.NewGuid(),
-            Name = "Annual Summary 2024",
-            CreatedAt = new DateTime(2025, 1, 5),
-            Records =
-            [
-                new ReportRecordModel
-                {
-                    Id = Guid.NewGuid(),
-                    CompanyName = "Adventure Works",
-                    Ticker = "ADWK",
-                    NumberOfShares = 3100,
-                    SharesChangePercentage = 4.2,
-                    Weight = 15.6
-                },
-                new ReportRecordModel
-                {
-                    Id = Guid.NewGuid(),
-                    CompanyName = "Tailspin Toys",
-                    Ticker = "TLSP",
-                    NumberOfShares = 950,
-                    SharesChangePercentage = -0.5,
-                    Weight = 5.1
-                }
-            ]
-        },
-        new()
-        {
-            Id = Guid.NewGuid(),
-            Name = "Mid-Year Insights 2024",
-            CreatedAt = new DateTime(2024, 7, 1),
-            Records =
-            [
-                new ReportRecordModel
-                {
-                    Id = Guid.NewGuid(),
-                    CompanyName = "Woodgrove Bank",
-                    Ticker = "WDBG",
-                    NumberOfShares = 2000,
-                    SharesChangePercentage = 1.1,
-                    Weight = 11.0
-                },
-                new ReportRecordModel
-                {
-                    Id = Guid.NewGuid(),
-                    CompanyName = "Alpine Ski House",
-                    Ticker = "ALSK",
-                    NumberOfShares = 1100,
-                    SharesChangePercentage = 0.3,
-                    Weight = 6.2
-                },
-                new ReportRecordModel
-                {
-                    Id = Guid.NewGuid(),
-                    CompanyName = "Blue Yonder Airlines",
-                    Ticker = "BYAL",
-                    NumberOfShares = 1700,
-                    SharesChangePercentage = 2.9,
-                    Weight = 9.8
-                }
-            ]
-        }
-    ];
+    private readonly List<ReportDetailModel> _reports = new();
+    private readonly List<EmailRecipientModel> _emailRecipients = new();
+    private readonly Random _random = new();
 
     public Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
     {
@@ -152,9 +35,67 @@ public class ApiClientMock : IApiClient
 
     public Task<ReportDetailModel> GenerateNewReportAsync()
     {
-        var newReport = new ReportDetailModel { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Name = "New Report" };
+        var now = DateTime.UtcNow;
+        var newReport = new ReportDetailModel 
+        { 
+            Id = Guid.NewGuid(), 
+            CreatedAt = now,
+            Name = $"ARK Innovation ETF Report - {now:yyyy-MM-dd HH:mm}",
+            Records = GenerateMockRecords()
+        };
         _reports.Add(newReport);
         return Task.FromResult(newReport);
+    }
+
+    private List<ReportRecordModel> GenerateMockRecords()
+    {
+        var companies = new[]
+        {
+            ("Tesla, Inc.", "TSLA"),
+            ("Coinbase Global, Inc.", "COIN"),
+            ("Roku, Inc.", "ROKU"),
+            ("Block, Inc.", "SQ"),
+            ("Unity Software Inc.", "U"),
+            ("Twilio Inc.", "TWLO"),
+            ("Zoom Video Communications, Inc.", "ZM"),
+            ("Palantir Technologies Inc.", "PLTR"),
+            ("Spotify Technology S.A.", "SPOT"),
+            ("Roblox Corporation", "RBLX"),
+            ("UiPath Inc.", "PATH"),
+            ("DraftKings Inc.", "DKNG"),
+            ("Teladoc Health, Inc.", "TDOC"),
+            ("Shopify Inc.", "SHOP"),
+            ("Snowflake Inc.", "SNOW")
+        };
+
+        var records = new List<ReportRecordModel>();
+        var totalWeight = 0.0;
+
+        foreach (var (companyName, ticker) in companies)
+        {
+            var shares = _random.Next(1000, 100000);
+            var weight = _random.NextDouble() * 15; // Random weight between 0 and 15%
+            totalWeight += weight;
+
+            records.Add(new ReportRecordModel
+            {
+                Id = Guid.NewGuid(),
+                CompanyName = companyName,
+                Ticker = ticker,
+                NumberOfShares = shares,
+                SharesChangePercentage = _random.NextDouble() * 20 - 10, // Random change between -10% and +10%
+                Weight = weight
+            });
+        }
+
+        // Normalize weights to sum up to 100%
+        var weightMultiplier = 100.0 / totalWeight;
+        foreach (var record in records)
+        {
+            record.Weight *= weightMultiplier;
+        }
+
+        return records;
     }
 
     public Task DeleteReportAsync(Guid id)
@@ -176,6 +117,34 @@ public class ApiClientMock : IApiClient
 
     public Task SendReportAsync(Guid id)
     {
+        Task.Delay(2000);
+        return Task.CompletedTask;
+    }
+
+    public Task<IEnumerable<EmailRecipientModel>> GetAllEmailsAsync()
+    {
+        return Task.FromResult<IEnumerable<EmailRecipientModel>>(_emailRecipients);
+    }
+
+    public Task AddEmailAsync(EmailRecipientModel emailRecipient)
+    {
+        _emailRecipients.Add(emailRecipient);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteEmailAsync(string email)
+    {
+        var recipient = _emailRecipients.FirstOrDefault(r => r.EmailAddress == email);
+        if (recipient != null)
+        {
+            _emailRecipients.Remove(recipient);
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAllEmailsAsync()
+    {
+        _emailRecipients.Clear();
         return Task.CompletedTask;
     }
 }

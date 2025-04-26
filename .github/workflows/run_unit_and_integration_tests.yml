@@ -1,4 +1,4 @@
-name: Run Unit Tests
+name: Run Unit and Inegration Tests
 
 on:
   pull_request:
@@ -34,7 +34,7 @@ jobs:
           cd src
           dotnet build PV260.sln --no-restore --configuration Release
         
-      - name: Run Unit Tests
+      - name: Run Tests in Solution
         run: |
           cd src
           dotnet test PV260.sln --no-build --configuration Release

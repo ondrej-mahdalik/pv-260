@@ -21,6 +21,9 @@ services:
     environment:
       - DOTNET_ENVIRONMENT=Development
       - DalSettings__ConnectionString=Server=pv260.api.db.dev;Database=PV260;User Id=sa;Password=Password1;TrustServerCertificate=True;
+      - EmailSettings__IntegrationApiKey=${EmailIntegrationApiKey} # Set this in your .env file to avoid committing it by mistake
+      - Logging__LogLevel__Default=Debug
+      - Logging__LogLevel__Microsoft=Warning
     depends_on:
       - pv260.api.db.dev
     networks:

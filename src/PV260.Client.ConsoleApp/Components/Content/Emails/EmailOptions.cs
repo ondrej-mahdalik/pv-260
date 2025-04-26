@@ -2,7 +2,8 @@
 
 internal enum EmailOptions
 {
-    SendEmail,
-    DisplayLatestEmail,
-    ListEmails
+    ListEmailRecipients,
+    AddEmailRecipient,
+    RemoveEmailRecipient,
+    ClearEmailRecipients,
 }

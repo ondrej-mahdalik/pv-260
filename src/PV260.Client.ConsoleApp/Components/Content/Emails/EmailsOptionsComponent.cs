@@ -1,4 +1,5 @@
-﻿using PV260.Client.ConsoleApp.Components.Interfaces;
+﻿using PV260.Client.BL;
+using PV260.Client.ConsoleApp.Components.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -9,10 +10,18 @@ internal class EmailsOptionsComponent : INavigationComponent
 {
     private readonly EmailOptions[] _emailOptions =
     [
-        EmailOptions.SendEmail,
-        EmailOptions.DisplayLatestEmail,
-        EmailOptions.ListEmails
+        EmailOptions.ListEmailRecipients,
+        EmailOptions.AddEmailRecipient,
+        EmailOptions.RemoveEmailRecipient,
+        EmailOptions.ClearEmailRecipients,
     ];
+
+    private readonly IApiClient _apiClient;
+
+    public EmailsOptionsComponent(IApiClient apiClient)
+    {
+        _apiClient = apiClient;
+    }
 
     public int SelectedIndex { get; private set; }
 
@@ -41,7 +50,8 @@ internal class EmailsOptionsComponent : INavigationComponent
 
             var selectedOption = _emailOptions[SelectedIndex];
 
-            var emailContentComponent = new EmailContentComponent(selectedOption);
+            // Pass the IApiClient instance to EmailContentComponent
+            var emailContentComponent = new EmailContentComponent(selectedOption, _apiClient, navigationService);
 
             navigationService.Push(emailContentComponent);
 

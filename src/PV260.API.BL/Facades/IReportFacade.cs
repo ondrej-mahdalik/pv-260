@@ -30,4 +30,10 @@ public interface IReportFacade : ICrudFacade<ReportListModel, ReportDetailModel,
     /// </summary>
     /// <returns>The number of reports deleted.</returns>
     Task<int> DeleteOldReportsAsync();
+
+    /// <summary>
+    /// Sends the report with the specified ID via email to all recipients.
+    /// </summary>
+    /// <param name="reportId">The ID of the report to send.</param>
+    Task SendReportViaEmailAsync(Guid reportId);
 }

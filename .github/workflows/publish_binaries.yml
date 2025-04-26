@@ -39,6 +39,17 @@ jobs:
             mv src/PV260.Client.ConsoleApp/publish/PV260.Client.ConsoleApp src/PV260.Client.ConsoleApp/publish/PV260.Client.ConsoleApp-${{ matrix.board.target }}
           fi
 
+      - name: Delete pdb files
+        run: |
+          find src/PV260.Client.ConsoleApp/publish -name "*.pdb" -type f -delete
+
+      - name: Set API base address in app settings
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: src/PV260.Client.ConsoleApp/publish/appsettings.json
+        env:
+          ApiSettings.BaseAddress: ${{ vars.BASE_ADDRESS }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -69,6 +80,10 @@ jobs:
         run: |
           cd src/PV260.API.App
           dotnet publish "PV260.API.App.csproj" --configuration Release --output publish/${{ matrix.board.target }} --runtime ${{ matrix.board.target }} -p:RuntimeIdentifierOverride=${{ matrix.board.target }} --self-contained
+
+      - name: Delete pdb files
+        run: |
+          find src/PV260.API.App/publish -name "*.pdb" -type f -delete
 
 
       - name: Pack each target platform to zip

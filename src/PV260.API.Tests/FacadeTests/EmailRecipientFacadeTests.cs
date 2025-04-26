@@ -7,14 +7,14 @@ using PV260.Tests.Common;
 namespace PV260.API.Tests.FacadeTests;
 
 [Collection("EmailFacadeTests")]
-public class EmailFacadeTests : FacadeTestBase
+public class EmailRecipientFacadeTests : FacadeTestBase
 {
     [Fact]
     public async Task GetAllEmailRecipientsAsync_ReturnsAllRecipients()
     {
         // Arrange
         // Act
-        var actualEmails = await EmailFacadeSut.GetAllEmailRecipientsAsync();
+        var actualEmails = await EmailRecipientFacadeSut.GetAllEmailRecipientsAsync();
 
         // Assert
         Assert.Equal(2, actualEmails.Count);
@@ -33,7 +33,7 @@ public class EmailFacadeTests : FacadeTestBase
         };
 
         // Act
-        await EmailFacadeSut.AddEmailRecipientAsync(emailRecipientModelToAdd);
+        await EmailRecipientFacadeSut.AddEmailRecipientAsync(emailRecipientModelToAdd);
 
         // Assert
         await using var uow = UnitOfWorkFactory.Create();
@@ -57,7 +57,7 @@ public class EmailFacadeTests : FacadeTestBase
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await EmailFacadeSut.AddEmailRecipientAsync(emailRecipientModelToAdd));
+            await EmailRecipientFacadeSut.AddEmailRecipientAsync(emailRecipientModelToAdd));
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class EmailFacadeTests : FacadeTestBase
         var emailRecipientToDelete = EmailRecipientMapper.ToDetailModel(EmailEntitySeeds.Entity1);
 
         // Act
-        await EmailFacadeSut.DeleteEmailRecipientAsync(emailRecipientToDelete.EmailAddress);
+        await EmailRecipientFacadeSut.DeleteEmailRecipientAsync(emailRecipientToDelete.EmailAddress);
 
         // Assert
         await using var uow = UnitOfWorkFactory.Create();
@@ -84,7 +84,7 @@ public class EmailFacadeTests : FacadeTestBase
         var emailToDelete = "test123@test.com";
 
         // Act & Assert
-        await EmailFacadeSut.DeleteEmailRecipientAsync(emailToDelete);
+        await EmailRecipientFacadeSut.DeleteEmailRecipientAsync(emailToDelete);
         // Does not throw
     }
 
@@ -93,7 +93,7 @@ public class EmailFacadeTests : FacadeTestBase
     {
         // Arrange
         // Act
-        await EmailFacadeSut.DeleteAllEmailRecipientsAsync();
+        await EmailRecipientFacadeSut.DeleteAllEmailRecipientsAsync();
 
         // Assert
         await using var uow = UnitOfWorkFactory.Create();
