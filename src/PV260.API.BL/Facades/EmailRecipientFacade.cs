@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PV260.API.BL.Mappers;
 using PV260.API.DAL.Entities;
+using PV260.API.DAL.Repositories;
 using PV260.API.DAL.UnitOfWork;
 using PV260.Common.Models;
 
@@ -16,8 +17,32 @@ public class EmailRecipientFacade(
     {
         await using var uow = unitOfWorkFactory.Create();
         var emails = await uow.GetRepository<EmailRecipientEntity>().Get().ToListAsync();
-        
+
         return emails.Select(emailMapper.ToListModel).ToList();
+    }
+
+    /// <inheritdoc />
+    public async Task<PaginatedResponse<EmailRecipientModel>> GetAllEmailRecipientsAsync(PaginationParameters paginationParameters)
+    {
+        await using var uow = unitOfWorkFactory.Create();
+
+        var repository = uow.GetRepository<EmailRecipientEntity>();
+
+        var emails = await repository
+            .Get()
+            .Skip((paginationParameters.PageNumber - 1) * paginationParameters.PageSize)
+            .Take(paginationParameters.PageSize)
+            .ToListAsync();
+
+        var totalNumberOfEntities = await repository.Get().CountAsync();
+
+        return new PaginatedResponse<EmailRecipientModel>
+        {
+            Items = emailMapper.ToListModel(emails),
+            PageSize = paginationParameters.PageSize,
+            PageNumber = paginationParameters.PageNumber,
+            TotalCount = totalNumberOfEntities
+        };
     }
 
     /// <inheritdoc />
