@@ -24,11 +24,11 @@ public class EmailController(IEmailFacade emailFacade) : ControllerBase
         await emailFacade.AddEmailRecipientAsync(emailRecipient);
         return Ok();
     }
-    
-    [HttpDelete]
+
+    [HttpDelete("{email}")]
     [EndpointSummary("Delete an email recipient")]
     [EndpointDescription("Deletes an email recipient from the list")]
-    public async Task<ActionResult> DeleteEmail([FromBody] string email)
+    public async Task<ActionResult> DeleteEmail(string email)
     {
         await emailFacade.DeleteEmailRecipientAsync(email);
         return NoContent();
