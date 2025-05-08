@@ -14,14 +14,20 @@ public class ReportFacadeTests : FacadeTestBase
     public async Task GetAllReportsAsync_ReturnsAllReports()
     {
         // Arrange
+        var paginationParameters = new PaginationParameters
+        {
+            PageNumber = 0,
+            PageSize = 10,
+        };
+
         // Act
-        var actualReports = await ReportFacadeSut.GetAsync();
+        var paginatedResponse = await ReportFacadeSut.GetAsync(paginationParameters);
 
         // Assert
-        Assert.Equal(3, actualReports.Count);
-        DeepAssert.Contains(ReportMapper.ToListModel(ReportEntitySeeds.Entity1), actualReports);
-        DeepAssert.Contains(ReportMapper.ToListModel(ReportEntitySeeds.Entity2), actualReports);
-        DeepAssert.Contains(ReportMapper.ToListModel(ReportEntitySeeds.Entity3), actualReports);
+        Assert.Equal(3, paginatedResponse.TotalCount);
+        DeepAssert.Contains(ReportMapper.ToListModel(ReportEntitySeeds.Entity1), paginatedResponse.Items);
+        DeepAssert.Contains(ReportMapper.ToListModel(ReportEntitySeeds.Entity2), paginatedResponse.Items);
+        DeepAssert.Contains(ReportMapper.ToListModel(ReportEntitySeeds.Entity3), paginatedResponse.Items);
     }
 
     [Fact]

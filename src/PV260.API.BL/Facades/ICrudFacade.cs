@@ -15,10 +15,11 @@ public interface ICrudFacade<TListModel, TDetailModel, TEntity>
     where TEntity : class, IEntity
 {
     /// <summary>
-    /// Retrieves a list of all entities as list models.
+    /// Retrieves a paginated list of all entities mapped to list models.
     /// </summary>
-    /// <returns>A list of list models containing all entities.</returns>
-    Task<IList<TListModel>> GetAsync();
+    /// <param name="paginationParameters">The parameters for pagination, including page size and page number.</param>
+    /// <returns>A task representing the asynchronous operation, containing a list of list models for the entities.</returns>
+    Task<PaginatedResponse<TListModel>> GetAsync(PaginationParameters paginationParameters);
     
     /// <summary>
     /// Retrieves a detail model by its unique identifier.
