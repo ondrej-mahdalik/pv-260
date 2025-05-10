@@ -40,7 +40,7 @@ internal class EmailClearComponent(
                 .WithSuccess("All email recipients have been removed successfully!", MessageSize.TableRow)
                 .Build();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return new EmailContentPanelBuilder()
                 .WithHeader(HeaderName)

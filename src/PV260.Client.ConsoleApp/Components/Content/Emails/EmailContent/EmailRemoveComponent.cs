@@ -2,6 +2,7 @@
 using PV260.Client.ConsoleApp.Components.Content.Common;
 using PV260.Client.ConsoleApp.Components.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
+using PV260.Common.Models;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -22,10 +23,15 @@ internal class EmailRemoveComponent(
     {
         try
         {
-            var emailList =
-                _apiClient.GetAllEmailsAsync().Result.ToList(); // Synchronous call for simplicity in console apps
+            var paginationCursor = new PaginationCursor
+            {
+                PageSize = 1000
+            };
 
-            if (!emailList.Any())
+            var emailList =
+                _apiClient.GetAllEmailsAsync(paginationCursor).Result; // Synchronous call for simplicity in console apps
+
+            if (!emailList.Items.Any())
             {
                 return new EmailContentPanelBuilder()
                     .WithHeader(HeaderName)
@@ -37,7 +43,7 @@ internal class EmailRemoveComponent(
                 new SelectionPrompt<string>()
                     .Title("[bold red]Select an email address to remove:[/]")
                     .PageSize(10)
-                    .AddChoices(emailList.Select(e => e.EmailAddress)));
+                    .AddChoices(emailList.Items.Select(e => e.EmailAddress)));
 
             _apiClient.DeleteEmailAsync(emailToRemove).Wait(); // Synchronous call for simplicity
 
@@ -46,7 +52,7 @@ internal class EmailRemoveComponent(
                 .WithSuccess($"Email address '{emailToRemove}' has been removed successfully!", MessageSize.TableRow)
                 .Build();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return new EmailContentPanelBuilder()
                 .WithHeader(HeaderName)

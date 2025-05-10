@@ -31,8 +31,8 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : INavig
 
         var paginatedRecords = report.Records
             .OrderBy(record => record.CompanyName)
-            .Skip(SelectedIndex * paginationSettings.MaxPageSize)
-            .Take(paginationSettings.MaxPageSize);
+            .Skip(SelectedIndex * paginationSettings.RecordsPerPage)
+            .Take(paginationSettings.RecordsPerPage);
 
         var panelBuilder = new ReportDetailPanelBuilder()
             .WithHeader(GetHeader())

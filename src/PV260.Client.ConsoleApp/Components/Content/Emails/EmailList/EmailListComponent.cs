@@ -13,7 +13,7 @@ internal class EmailListComponent(IApiClient apiClient) : INavigationComponent
 
     private readonly IApiClient _apiClient = apiClient;
 
-    private readonly PageInformation<EmailRecipientModel> _pageInformation = new();
+    private readonly ListPageInformation<EmailRecipientModel> _pageInformation = new();
 
     public int SelectedIndex { get; private set; }
 
@@ -39,13 +39,22 @@ internal class EmailListComponent(IApiClient apiClient) : INavigationComponent
                 _pageInformation.SelectedPageIndex = 0;
                 break;
         }
+
+        HandlePageStack(key);
     }
 
     public IRenderable Render()
     {
-        var emails = _apiClient.GetAllEmailsAsync().Result.ToList();
+        var paginationCursor = new PaginationCursor
+        {
+            PageSize = PaginationSettings.CalculateRecordsPerPage(),
+            LastCreatedAt = _pageInformation.ListPageStack.Model?.CreatedAt,
+            LastId = _pageInformation.ListPageStack.Model?.CreatedAt is null ? null : Guid.Empty
+        };
 
-        if (!emails.Any())
+        var paginatedEmailsResponse = _apiClient.GetAllEmailsAsync(paginationCursor).Result;
+
+        if (!paginatedEmailsResponse.Items.Any())
         {
             return new EmailOptionPanelBuilder()
                 .WithHeader(HeaderName)
@@ -53,20 +62,15 @@ internal class EmailListComponent(IApiClient apiClient) : INavigationComponent
                 .Build();
         }
 
-        var paginationSettings = CalculateEmailListPaging(emails.Count);
+        CalculateEmailListPaging(paginatedEmailsResponse.TotalCount);
 
-        var paginatedEmails = emails
-            .OrderBy(email => email.EmailAddress)
-            .Skip(SelectedIndex * paginationSettings.MaxPageSize)
-            .Take(paginationSettings.MaxPageSize)
-            .ToList();
-
-        _pageInformation.PageSize = paginatedEmails.Count;
-        _pageInformation.SelectedModel = paginatedEmails[_pageInformation.SelectedPageIndex];
+        _pageInformation.PageSize = paginatedEmailsResponse.Items.Count;
+        _pageInformation.SelectedModel = paginatedEmailsResponse.Items[_pageInformation.SelectedPageIndex];
+        _pageInformation.ListPageStack.PushModel(paginatedEmailsResponse.Items.Last());
 
         return new EmailOptionPanelBuilder()
             .WithHeader(HeaderName)
-            .WithList(paginatedEmails, _pageInformation.SelectedPageIndex)
+            .WithList(paginatedEmailsResponse.Items, _pageInformation.SelectedPageIndex)
             .WithMessage("Use <- and -> to navigate between records on page", MessageSize.TableRow)
             .Build();
     }
@@ -82,14 +86,27 @@ internal class EmailListComponent(IApiClient apiClient) : INavigationComponent
         };
     }
 
-    private PaginationSettings CalculateEmailListPaging(int recordCount)
+    private void CalculateEmailListPaging(int recordCount)
     {
         var paginationSettings = PaginationSettings.CalculatePagination(recordCount);
 
         NavigationItems = Enumerable.Range(1, paginationSettings.NumberOfPages)
             .Select(i => $"Page {i}")
             .ToArray();
+    }
 
-        return paginationSettings;
+    private void HandlePageStack(ConsoleKey key)
+    {
+        if (SelectedIndex == 0)
+        {
+            _pageInformation.ListPageStack.ClearStack();
+        }
+
+        if (key != ConsoleKey.UpArrow)
+        {
+            return;
+        }
+
+        _pageInformation.ListPageStack.PopModel();
     }
 }

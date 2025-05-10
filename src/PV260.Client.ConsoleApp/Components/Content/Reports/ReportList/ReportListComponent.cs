@@ -14,7 +14,7 @@ internal class ReportListComponent(IApiClient apiClient) : INavigationComponent
 
     private readonly IApiClient _apiClient = apiClient;
 
-    private readonly PageInformation<ReportListModel> _pageInformation = new();
+    private readonly ListPageInformation<ReportListModel> _pageInformation = new();
 
     public int SelectedIndex { get; private set; }
 
@@ -40,13 +40,22 @@ internal class ReportListComponent(IApiClient apiClient) : INavigationComponent
                 _pageInformation.SelectedPageIndex = 0;
                 break;
         }
+
+        HandlePageStack(key);
     }
 
     public IRenderable Render()
     {
-        var reports = _apiClient.GetAllReportsAsync().Result.ToList();
+        var paginationCursor = new PaginationCursor
+        {
+            PageSize = PaginationSettings.CalculateRecordsPerPage(),
+            LastCreatedAt = _pageInformation.ListPageStack.Model?.CreatedAt,
+            LastId = _pageInformation.ListPageStack.Model?.Id
+        };
 
-        if (!reports.Any())
+        var paginatedReportsResponse = _apiClient.GetAllReportsAsync(paginationCursor).Result;
+
+        if (!paginatedReportsResponse.Items.Any())
         {
             return new ReportOptionPanelBuilder()
                 .WithHeader(HeaderName)
@@ -54,20 +63,19 @@ internal class ReportListComponent(IApiClient apiClient) : INavigationComponent
                 .Build();
         }
 
-        var paginationSettings = CalculateRecordListPaging(reports.Count);
+        CalculateRecordListPaging(paginatedReportsResponse.TotalCount);
 
-        var paginatedRecords = reports
-            .OrderBy(record => record.Name)
-            .Skip(SelectedIndex * paginationSettings.MaxPageSize)
-            .Take(paginationSettings.MaxPageSize)
-            .ToList();
+        _pageInformation.PageSize = paginatedReportsResponse.Items.Count;
+        _pageInformation.SelectedModel = paginatedReportsResponse.Items[_pageInformation.SelectedPageIndex];
 
-        _pageInformation.PageSize = paginatedRecords.Count;
-        _pageInformation.SelectedModel = paginatedRecords[_pageInformation.SelectedPageIndex];
-
+        if (_pageInformation.PageSize == paginationCursor.PageSize)
+        {
+            _pageInformation.ListPageStack.PushModel(paginatedReportsResponse.Items.Last());
+        }
+        
         return new ReportOptionPanelBuilder()
             .WithHeader(HeaderName)
-            .WithList(paginatedRecords, _pageInformation.SelectedPageIndex)
+            .WithList(paginatedReportsResponse.Items, _pageInformation.SelectedPageIndex)
             .WithMessage("Use <- and -> to navigate between records on page", MessageSize.TableRow)
             .Build();
     }
@@ -95,14 +103,27 @@ internal class ReportListComponent(IApiClient apiClient) : INavigationComponent
         }
     }
 
-    private PaginationSettings CalculateRecordListPaging(int recordCount)
+    private void CalculateRecordListPaging(int recordCount)
     {
         var paginationSettings = PaginationSettings.CalculatePagination(recordCount);
 
         NavigationItems = Enumerable.Range(1, paginationSettings.NumberOfPages)
             .Select(i => $"Page {i}")
             .ToArray();
+    }
 
-        return paginationSettings;
+    private void HandlePageStack(ConsoleKey key)
+    {
+        if (SelectedIndex == 0)
+        {
+            _pageInformation.ListPageStack.ClearStack();
+        }
+
+        if (key != ConsoleKey.UpArrow)
+        {
+            return;
+        }
+
+        _pageInformation.ListPageStack.PopModel();
     }
 }
