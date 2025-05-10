@@ -11,6 +11,55 @@ public class EmailRecipientFacade(
     IMapper<EmailRecipientEntity, EmailRecipientModel, EmailRecipientModel> emailMapper,
     IUnitOfWorkFactory unitOfWorkFactory) : IEmailFacade
 {
+    public async Task<PaginatedResponse<EmailRecipientModel>> GetAllEmailRecipientsAsync(
+        PaginationCursor paginationCursor)
+    {
+        await using var uow = unitOfWorkFactory.Create();
+        var repository = uow.GetRepository<EmailRecipientEntity>();
+
+        const int nextPageOffset = 1;
+
+        var isFirstPage = paginationCursor.LastCreatedAt is null && paginationCursor.LastId is null;
+
+        var emailRecipientEntities = isFirstPage
+            ? await repository
+                .Get()
+                .OrderByDescending(report => report.CreatedAt)
+                .ThenBy(report => report.Id)
+                .Take(paginationCursor.PageSize + nextPageOffset)
+                .ToListAsync()
+            : await repository
+                .Get()
+                .OrderByDescending(report => report.CreatedAt)
+                .ThenBy(report => report.Id)
+                .Where(report =>
+                    report.CreatedAt < paginationCursor.LastCreatedAt ||
+                    (report.CreatedAt == paginationCursor.LastCreatedAt && report.Id > paginationCursor.LastId))
+                .Take(paginationCursor.PageSize + nextPageOffset)
+                .ToListAsync();
+
+        var hasNextPage = emailRecipientEntities.Count > paginationCursor.PageSize;
+
+        var currentPage = emailRecipientEntities.Take(paginationCursor.PageSize).ToList();
+
+        var last = currentPage.LastOrDefault();
+
+        return new PaginatedResponse<EmailRecipientModel>
+        {
+            Items = emailMapper.ToListModel(currentPage),
+            PageSize = paginationCursor.PageSize,
+            TotalCount = await repository.Get().CountAsync(),
+            NextCursor = hasNextPage && last is not null
+                ? new PaginationCursor
+                {
+                    LastCreatedAt = last.CreatedAt,
+                    LastId = last.Id,
+                    PageSize = paginationCursor.PageSize
+                }
+                : null
+        };
+    }
+
     /// <inheritdoc />
     public async Task<IList<EmailRecipientModel>> GetAllEmailRecipientsAsync()
     {

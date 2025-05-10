@@ -33,6 +33,54 @@ public class ReportFacade(
     private readonly ReportOptions _reportOptions = reportOptions.Value;
     private readonly EmailOptions _emailOptions = emailOptions.Value;
 
+    public async Task<PaginatedResponse<ReportListModel>> GetAsync(PaginationCursor paginationCursor)
+    {
+        await using var uow = UnitOfWorkFactory.Create();
+        var repository = uow.GetRepository<ReportEntity>();
+
+        const int nextPageOffset = 1;
+
+        var isFirstPage = paginationCursor.LastCreatedAt is null && paginationCursor.LastId is null;
+
+        var reportEntities = isFirstPage
+            ? await repository
+                .Get()
+                .OrderByDescending(report => report.CreatedAt)
+                .ThenBy(report => report.Id)
+                .Take(paginationCursor.PageSize + nextPageOffset)
+                .ToListAsync()
+            : await repository
+                .Get()
+                .OrderByDescending(report => report.CreatedAt)
+                .ThenBy(report => report.Id)
+                .Where(report =>
+                    report.CreatedAt < paginationCursor.LastCreatedAt ||
+                    (report.CreatedAt == paginationCursor.LastCreatedAt && report.Id > paginationCursor.LastId))
+                .Take(paginationCursor.PageSize + nextPageOffset)
+                .ToListAsync();
+
+        var hasNextPage = reportEntities.Count > paginationCursor.PageSize;
+
+        var currentPage = reportEntities.Take(paginationCursor.PageSize).ToList();
+
+        var last = currentPage.LastOrDefault();
+
+        return new PaginatedResponse<ReportListModel>
+        {
+            Items = Mapper.ToListModel(currentPage),
+            PageSize = paginationCursor.PageSize,
+            TotalCount = await repository.Get().CountAsync(),
+            NextCursor = hasNextPage && last is not null
+                ? new PaginationCursor
+                {
+                    LastCreatedAt = last.CreatedAt,
+                    LastId = last.Id,
+                    PageSize = paginationCursor.PageSize
+                }
+                : null
+        };
+    }
+
     /// <inheritdoc />
     public override async Task SaveAsync(ReportDetailModel model)
     {

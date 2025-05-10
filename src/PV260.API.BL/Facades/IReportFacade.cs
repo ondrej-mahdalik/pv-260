@@ -9,6 +9,13 @@ namespace PV260.API.BL.Facades;
 public interface IReportFacade : ICrudFacade<ReportListModel, ReportDetailModel, ReportEntity>
 {
     /// <summary>
+    /// Retrieves a paginated list of reports based on the provided pagination cursor.
+    /// </summary>
+    /// <param name="paginationCursor">The pagination cursor specifying the page size and position.</param>
+    /// <returns>A paginated response containing a list of report models.</returns>
+    Task<PaginatedResponse<ReportListModel>> GetAsync(PaginationCursor paginationCursor);
+
+    /// <summary>
     /// Deletes all reports from the storage.
     /// </summary>
     Task DeleteAllAsync();

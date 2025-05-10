@@ -11,9 +11,9 @@ public class EmailController(IEmailFacade emailFacade) : ControllerBase
     [HttpGet]
     [EndpointSummary("Get all email recipients")]
     [EndpointDescription("Returns a list of all email recipients")]
-    public async Task<ActionResult<IEnumerable<EmailRecipientModel>>> GetAllEmails()
+    public async Task<ActionResult<PaginatedResponse<EmailRecipientModel>>> GetAllEmails([FromQuery] PaginationCursor paginationCursor)
     {
-        return Ok(await emailFacade.GetAllEmailRecipientsAsync());
+        return Ok(await emailFacade.GetAllEmailRecipientsAsync(paginationCursor));
     }
 
     [HttpPost]
@@ -24,11 +24,11 @@ public class EmailController(IEmailFacade emailFacade) : ControllerBase
         await emailFacade.AddEmailRecipientAsync(emailRecipient);
         return Ok();
     }
-    
-    [HttpDelete]
+
+    [HttpDelete("{email}")]
     [EndpointSummary("Delete an email recipient")]
     [EndpointDescription("Deletes an email recipient from the list")]
-    public async Task<ActionResult> DeleteEmail([FromBody] string email)
+    public async Task<ActionResult> DeleteEmail(string email)
     {
         await emailFacade.DeleteEmailRecipientAsync(email);
         return NoContent();

@@ -73,7 +73,7 @@ public class ApiClient(HttpClient httpClient) : IApiClient
     /// <inheritdoc />
     public async Task DeleteEmailAsync(string email)
     {
-        var response = await httpClient.PostAsJsonAsync("Email", email);
+        var response = await httpClient.DeleteAsync($"Email/{email}");
         response.EnsureSuccessStatusCode();
     }
 
