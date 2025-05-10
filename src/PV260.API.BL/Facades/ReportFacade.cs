@@ -33,6 +33,45 @@ public class ReportFacade(
     private readonly ReportOptions _reportOptions = reportOptions.Value;
     private readonly EmailOptions _emailOptions = emailOptions.Value;
 
+    public async Task<PaginatedResponse<ReportListModel>> GetAsync(PaginationCursor paginationCursor)
+    {
+        await using var uow = UnitOfWorkFactory.Create();
+        var repository = uow.GetRepository<ReportEntity>();
+
+        var query = repository
+            .Get()
+            .OrderByDescending(report => report.CreatedAt)
+            .ThenBy(report => report.Id);
+
+        if (paginationCursor.LastCreatedAt is not null && paginationCursor.LastId is not null)
+        {
+            query = (IOrderedQueryable<ReportEntity>)query.Where(report =>
+                report.CreatedAt < paginationCursor.LastCreatedAt ||
+                (report.CreatedAt == paginationCursor.LastCreatedAt && report.Id > paginationCursor.LastId));
+        }
+
+        var reportEntities = await query
+            .Take(paginationCursor.PageSize)
+            .ToListAsync();
+
+        return new PaginatedResponse<ReportListModel>
+        {
+            Items = Mapper.ToListModel(reportEntities),
+            PageSize = paginationCursor.PageSize,
+            TotalCount = await repository.Get().CountAsync(),
+            NextCursor = reportEntities.LastOrDefault() is { } last &&
+                         last.CreatedAt != paginationCursor.LastCreatedAt &&
+                         last.Id != paginationCursor.LastId
+                ? new PaginationCursor
+                {
+                    LastCreatedAt = last.CreatedAt,
+                    LastId = last.Id,
+                    PageSize = paginationCursor.PageSize
+                }
+                : null,
+        };
+    }
+
     /// <inheritdoc />
     public override async Task SaveAsync(ReportDetailModel model)
     {

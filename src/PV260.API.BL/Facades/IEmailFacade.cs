@@ -8,6 +8,7 @@ namespace PV260.API.BL.Facades;
 /// </summary>
 public interface IEmailFacade
 {
+    Task<PaginatedResponse<EmailRecipientModel>> GetAllEmailRecipientsAsync(PaginationCursor paginationCursor);
     /// <summary>
     /// Retrieves all email recipients.
     /// </summary>

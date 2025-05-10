@@ -11,6 +11,48 @@ public class EmailRecipientFacade(
     IMapper<EmailRecipientEntity, EmailRecipientModel, EmailRecipientModel> emailMapper,
     IUnitOfWorkFactory unitOfWorkFactory) : IEmailFacade
 {
+    public async Task<PaginatedResponse<EmailRecipientModel>> GetAllEmailRecipientsAsync(
+        PaginationCursor paginationCursor)
+    {
+        await using var uow = unitOfWorkFactory.Create();
+        var repository = uow.GetRepository<EmailRecipientEntity>();
+
+        var query = repository
+            .Get()
+            .OrderByDescending(report => report.CreatedAt)
+            .ThenBy(report => report.Id);
+
+        if (paginationCursor.LastCreatedAt is not null && paginationCursor.LastId is not null)
+        {
+            query = (IOrderedQueryable<EmailRecipientEntity>)query.Where(report =>
+                report.CreatedAt < paginationCursor.LastCreatedAt ||
+                (report.CreatedAt == paginationCursor.LastCreatedAt && report.Id > paginationCursor.LastId));
+        }
+
+        var emailRecipientEntities = await query
+            .Take(paginationCursor.PageSize)
+            .ToListAsync();
+
+        return new PaginatedResponse<EmailRecipientModel>
+        {
+            Items = emailMapper.ToListModel(emailRecipientEntities),
+            PageSize = paginationCursor.PageSize,
+            TotalCount = await repository.Get().CountAsync(),
+            NextCursor = emailRecipientEntities.LastOrDefault() is
+                         {
+                         } last &&
+                         last.CreatedAt != paginationCursor.LastCreatedAt &&
+                         last.Id != paginationCursor.LastId
+                ? new PaginationCursor
+                {
+                    LastCreatedAt = last.CreatedAt,
+                    LastId = last.Id,
+                    PageSize = paginationCursor.PageSize
+                }
+                : null,
+        };
+    }
+
     /// <inheritdoc />
     public async Task<IList<EmailRecipientModel>> GetAllEmailRecipientsAsync()
     {

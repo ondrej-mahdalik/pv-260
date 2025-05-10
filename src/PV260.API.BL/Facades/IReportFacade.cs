@@ -8,6 +8,7 @@ namespace PV260.API.BL.Facades;
 /// </summary>
 public interface IReportFacade : ICrudFacade<ReportListModel, ReportDetailModel, ReportEntity>
 {
+    Task<PaginatedResponse<ReportListModel>> GetAsync(PaginationCursor paginationCursor);
     /// <summary>
     /// Deletes all reports from the storage.
     /// </summary>

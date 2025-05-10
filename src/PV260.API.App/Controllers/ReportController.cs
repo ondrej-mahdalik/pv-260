@@ -11,9 +11,9 @@ public class ReportController(IReportFacade reportFacade) : ControllerBase
     [HttpGet]
     [EndpointSummary("Get all reports")]
     [EndpointDescription("Returns a list of all reports")]
-    public async Task<ActionResult<IEnumerable<ReportListModel>>> GetAllReports()
+    public async Task<ActionResult<PaginatedResponse<ReportListModel>>> GetAllReports([FromQuery] PaginationCursor paginationCursor)
     {
-        return Ok(await reportFacade.GetAsync());
+        return Ok(await reportFacade.GetAsync(paginationCursor));
     }
 
     [HttpGet("{id:guid}")]
