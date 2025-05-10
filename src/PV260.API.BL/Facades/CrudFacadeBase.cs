@@ -31,27 +31,13 @@ public abstract class CrudFacadeBase<TListModel, TDetailModel, TEntity>(
     protected readonly IUnitOfWorkFactory UnitOfWorkFactory = unitOfWorkFactory;
 
     /// <inheritdoc />
-    public virtual async Task<PaginatedResponse<TListModel>> GetAsync(PaginationParameters paginationParameters)
+    public virtual async Task<IList<TListModel>> GetAsync()
     {
         await using var uow = UnitOfWorkFactory.Create();
-
         var repository = uow.GetRepository<TEntity>();
+        var entities = await repository.Get().ToListAsync();
 
-        var entities = await repository
-            .Get()
-            .Skip((paginationParameters.PageNumber - 1) * paginationParameters.PageSize)
-            .Take(paginationParameters.PageSize)
-            .ToListAsync();
-
-        var totalNumberOfEntities = await repository.Get().CountAsync();
-
-        return new PaginatedResponse<TListModel>
-        {
-            Items = Mapper.ToListModel(entities),
-            PageSize = paginationParameters.PageSize,
-            PageNumber = paginationParameters.PageNumber,
-            TotalCount = totalNumberOfEntities
-        };
+        return Mapper.ToListModel(entities).ToList();
     }
 
     /// <inheritdoc />
