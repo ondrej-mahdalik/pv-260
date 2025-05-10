@@ -50,8 +50,8 @@ internal class EmailsOptionsComponent(IApiClient apiClient) : INavigationCompone
         {
             EmailOptions.ListEmailRecipients => new EmailListComponent(_apiClient),
             EmailOptions.AddEmailRecipient => new EmailAddComponent(_apiClient, navigationService),
-            EmailOptions.RemoveEmailRecipient => new EmailRemoveComponent(apiClient, navigationService),
-            EmailOptions.ClearEmailRecipients => new EmailClearComponent(apiClient, navigationService),
+            EmailOptions.RemoveEmailRecipient => new EmailRemoveComponent(_apiClient, navigationService),
+            EmailOptions.ClearEmailRecipients => new EmailClearComponent(_apiClient, navigationService),
             _ => new EmailListComponent(_apiClient)
         };
 
