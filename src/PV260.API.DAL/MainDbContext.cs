@@ -31,20 +31,28 @@ public class MainDbContext(DbContextOptions<MainDbContext> options) : DbContext(
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
+
         modelBuilder.Entity<ReportEntity>()
             .HasMany(entity => entity.Records)
             .WithOne(entity => entity.Report)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<ReportEntity>()
+            .HasIndex(entity => entity.CreatedAt)
+            .IsDescending();
+
+        modelBuilder.Entity<ReportEntity>()
             .Navigation(entity => entity.Records)
             .AutoInclude();
-        
+
         modelBuilder.Entity<ReportRecordEntity>()
-            .HasKey(entity => new {entity.ReportId, entity.Id});
-        
+            .HasKey(entity => new { entity.ReportId, entity.Id });
+
         modelBuilder.Entity<EmailRecipientEntity>()
             .HasAlternateKey(entity => entity.EmailAddress);
+
+        modelBuilder.Entity<EmailRecipientEntity>()
+            .HasIndex(entity => entity.CreatedAt)
+            .IsDescending();
     }
 }
