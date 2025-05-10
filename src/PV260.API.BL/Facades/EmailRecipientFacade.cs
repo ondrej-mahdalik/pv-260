@@ -46,7 +46,7 @@ public class EmailRecipientFacade(
 
         return new PaginatedResponse<EmailRecipientModel>
         {
-            Items = emailMapper.ToListModel(currentPage),
+            Items = emailMapper.ToListModel(currentPage).ToList(),
             PageSize = paginationCursor.PageSize,
             TotalCount = await repository.Get().CountAsync(),
             NextCursor = hasNextPage && last is not null
