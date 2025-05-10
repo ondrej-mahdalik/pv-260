@@ -32,6 +32,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IFooterComponent, FooterComponent>();
         services.AddSingleton<IContentRouter, DefaultContentRouter>();
         services.AddSingleton<ILayoutBuilder, LayoutBuilder>();
+        services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ConsoleApplication>();
     })
     .Build();

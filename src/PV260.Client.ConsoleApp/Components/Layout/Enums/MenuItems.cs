@@ -3,6 +3,7 @@
 internal enum MenuItems
 {
     Home,
+    LatestGeneratedReport,
     Reports,
     Emails,
     About

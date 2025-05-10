@@ -2,22 +2,28 @@
 using PV260.Common.Models;
 
 namespace PV260.Client.Mock;
+
 public class ApiClientMock : IApiClient
 {
-    private readonly List<ReportDetailModel> _reports = new();
-    private readonly List<EmailRecipientModel> _emailRecipients = new();
+    private readonly List<ReportDetailModel> _reports = [];
+    private readonly List<EmailRecipientModel> _emailRecipients = [];
     private readonly Random _random = new();
 
-    public Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
+    public Task<PaginatedResponse<ReportListModel>> GetAllReportsAsync(PaginationCursor paginationCursor)
     {
-        var listModels = _reports.Select(r => new ReportListModel
+        var paginatedReports = new PaginatedResponse<ReportListModel>
         {
-            Id = r.Id,
-            CreatedAt = r.CreatedAt,
-            Name = r.Name
-        }).ToList();
+            Items = _reports.Select(r => new ReportListModel
+            {
+                Id = r.Id,
+                CreatedAt = r.CreatedAt,
+                Name = r.Name
+            }).Take(paginationCursor.PageSize).ToList(),
+            PageSize = 10,
+            TotalCount = 10
+        };
 
-        return Task.FromResult<IEnumerable<ReportListModel>>(listModels);
+        return Task.FromResult(paginatedReports);
     }
 
     public Task<ReportDetailModel?> GetReportByIdAsync(Guid id)
@@ -104,6 +110,7 @@ public class ApiClientMock : IApiClient
         {
             _reports.Remove(report);
         }
+
         return Task.CompletedTask;
     }
 
@@ -119,9 +126,16 @@ public class ApiClientMock : IApiClient
         return Task.CompletedTask;
     }
 
-    public Task<IEnumerable<EmailRecipientModel>> GetAllEmailsAsync()
+    public Task<PaginatedResponse<EmailRecipientModel>> GetAllEmailsAsync(PaginationCursor paginationCursor)
     {
-        return Task.FromResult<IEnumerable<EmailRecipientModel>>(_emailRecipients);
+        var paginatedEmails = new PaginatedResponse<EmailRecipientModel>
+        {
+            Items = _emailRecipients.Take(paginationCursor.PageSize).ToList(),
+            PageSize = 10,
+            TotalCount = 10
+        };
+
+        return Task.FromResult(paginatedEmails);
     }
 
     public Task AddEmailAsync(EmailRecipientModel emailRecipient)
