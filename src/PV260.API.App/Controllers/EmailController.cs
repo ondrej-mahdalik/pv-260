@@ -11,9 +11,9 @@ public class EmailController(IEmailFacade emailFacade) : ControllerBase
     [HttpGet]
     [EndpointSummary("Get all email recipients")]
     [EndpointDescription("Returns a list of all email recipients")]
-    public async Task<ActionResult<PaginatedResponse<EmailRecipientModel>>> GetAllEmails([FromQuery] PaginationParameters paginationParameters)
+    public async Task<ActionResult<IEnumerable<EmailRecipientModel>>> GetAllEmails()
     {
-        return Ok(await emailFacade.GetAllEmailRecipientsAsync(paginationParameters));
+        return Ok(await emailFacade.GetAllEmailRecipientsAsync());
     }
 
     [HttpPost]

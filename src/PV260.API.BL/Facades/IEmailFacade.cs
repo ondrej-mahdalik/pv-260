@@ -14,15 +14,6 @@ public interface IEmailFacade
     /// <returns>A list of email addresses.</returns>
     Task<IList<EmailRecipientModel>> GetAllEmailRecipientsAsync();
 
-
-    /// <summary>
-    /// Retrieves a paginated list of email recipients.
-    /// </summary>
-    /// <param name="paginationParameters">The pagination parameters, including the page number and page size.</param>
-    /// <returns>A paginated response containing a list of email recipients, along with pagination details like total count and total pages.</returns>
-    Task<PaginatedResponse<EmailRecipientModel>> GetAllEmailRecipientsAsync(PaginationParameters paginationParameters);
-
-
     /// <summary>
     /// Adds a new email recipient to the storage.
     /// </summary>
