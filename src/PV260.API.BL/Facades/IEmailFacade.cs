@@ -8,7 +8,13 @@ namespace PV260.API.BL.Facades;
 /// </summary>
 public interface IEmailFacade
 {
+    /// <summary>
+    /// Retrieves a paginated list of email recipients based on the provided pagination cursor.
+    /// </summary>
+    /// <param name="paginationCursor">The pagination cursor containing page size and position information.</param>
+    /// <returns>A paginated response containing a list of email recipient models.</returns>
     Task<PaginatedResponse<EmailRecipientModel>> GetAllEmailRecipientsAsync(PaginationCursor paginationCursor);
+
     /// <summary>
     /// Retrieves all email recipients.
     /// </summary>

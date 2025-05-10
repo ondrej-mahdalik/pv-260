@@ -17,39 +17,46 @@ public class EmailRecipientFacade(
         await using var uow = unitOfWorkFactory.Create();
         var repository = uow.GetRepository<EmailRecipientEntity>();
 
-        var query = repository
-            .Get()
-            .OrderByDescending(report => report.CreatedAt)
-            .ThenBy(report => report.Id);
+        const int nextPageOffset = 1;
 
-        if (paginationCursor.LastCreatedAt is not null && paginationCursor.LastId is not null)
-        {
-            query = (IOrderedQueryable<EmailRecipientEntity>)query.Where(report =>
-                report.CreatedAt < paginationCursor.LastCreatedAt ||
-                (report.CreatedAt == paginationCursor.LastCreatedAt && report.Id > paginationCursor.LastId));
-        }
+        var isFirstPage = paginationCursor.LastCreatedAt is null && paginationCursor.LastId is null;
 
-        var emailRecipientEntities = await query
-            .Take(paginationCursor.PageSize)
-            .ToListAsync();
+        var emailRecipientEntities = isFirstPage
+            ? await repository
+                .Get()
+                .OrderByDescending(report => report.CreatedAt)
+                .ThenBy(report => report.Id)
+                .Take(paginationCursor.PageSize + nextPageOffset)
+                .ToListAsync()
+            : await repository
+                .Get()
+                .OrderByDescending(report => report.CreatedAt)
+                .ThenBy(report => report.Id)
+                .Where(report =>
+                    report.CreatedAt < paginationCursor.LastCreatedAt ||
+                    (report.CreatedAt == paginationCursor.LastCreatedAt && report.Id > paginationCursor.LastId))
+                .Take(paginationCursor.PageSize + nextPageOffset)
+                .ToListAsync();
+
+        var hasNextPage = emailRecipientEntities.Count > paginationCursor.PageSize;
+
+        var currentPage = emailRecipientEntities.Take(paginationCursor.PageSize).ToList();
+
+        var last = currentPage.LastOrDefault();
 
         return new PaginatedResponse<EmailRecipientModel>
         {
-            Items = emailMapper.ToListModel(emailRecipientEntities),
+            Items = emailMapper.ToListModel(currentPage),
             PageSize = paginationCursor.PageSize,
             TotalCount = await repository.Get().CountAsync(),
-            NextCursor = emailRecipientEntities.LastOrDefault() is
-                         {
-                         } last &&
-                         last.CreatedAt != paginationCursor.LastCreatedAt &&
-                         last.Id != paginationCursor.LastId
+            NextCursor = hasNextPage && last is not null
                 ? new PaginationCursor
                 {
                     LastCreatedAt = last.CreatedAt,
                     LastId = last.Id,
                     PageSize = paginationCursor.PageSize
                 }
-                : null,
+                : null
         };
     }
 
