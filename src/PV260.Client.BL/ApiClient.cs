@@ -1,6 +1,7 @@
 ﻿using PV260.Common.Models;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Web;
 
 namespace PV260.Client.BL;
 
@@ -10,9 +11,17 @@ namespace PV260.Client.BL;
 public class ApiClient(HttpClient httpClient) : IApiClient
 {
     /// <inheritdoc />
-    public async Task<IEnumerable<ReportListModel>> GetAllReportsAsync()
+    public async Task<PaginatedResponse<ReportListModel>> GetAllReportsAsync(PaginationCursor paginationCursor)
     {
-        return await httpClient.GetFromJsonAsync<IEnumerable<ReportListModel>>("Report") ?? new List<ReportListModel>();
+        var url = BuildUrlWithCursor("Report", paginationCursor);
+
+        return await httpClient.GetFromJsonAsync<PaginatedResponse<ReportListModel>>(url) ??
+               new PaginatedResponse<ReportListModel>
+               {
+                   Items = [],
+                   PageSize = 0,
+                   TotalCount = 0
+               };
     }
 
     /// <inheritdoc />
@@ -58,9 +67,17 @@ public class ApiClient(HttpClient httpClient) : IApiClient
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<EmailRecipientModel>> GetAllEmailsAsync()
+    public async Task<PaginatedResponse<EmailRecipientModel>> GetAllEmailsAsync(PaginationCursor paginationCursor)
     {
-        return await httpClient.GetFromJsonAsync<IEnumerable<EmailRecipientModel>>("Email") ?? new List<EmailRecipientModel>();
+        var url = BuildUrlWithCursor("Email", paginationCursor);
+
+        return await httpClient.GetFromJsonAsync<PaginatedResponse<EmailRecipientModel>>(url) ??
+               new PaginatedResponse<EmailRecipientModel>
+               {
+                   Items = [],
+                   PageSize = 0,
+                   TotalCount = 0
+               };
     }
 
     /// <inheritdoc />
@@ -82,6 +99,18 @@ public class ApiClient(HttpClient httpClient) : IApiClient
     {
         var response = await httpClient.DeleteAsync("Email/all");
         response.EnsureSuccessStatusCode();
+    }
+
+    private static string BuildUrlWithCursor(string basePath, PaginationCursor cursor)
+    {
+        var query = HttpUtility.ParseQueryString(string.Empty);
+        query["pageSize"] = cursor.PageSize.ToString();
+        if (cursor.LastCreatedAt.HasValue)
+            query["lastCreatedAt"] = cursor.LastCreatedAt.Value.ToString("o"); // ISO 8601 format
+        if (cursor.LastId.HasValue)
+            query["lastId"] = cursor.LastId.ToString();
+
+        return $"{basePath}?{query}";
     }
 
 }

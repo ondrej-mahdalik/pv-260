@@ -2,7 +2,7 @@
 
 public record PaginatedResponse<T>
 {
-    public required IEnumerable<T> Items { get; init; }
+    public required IList<T> Items { get; init; }
 
     public required int PageSize { get; init; }
 

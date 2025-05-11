@@ -1,6 +1,5 @@
 ﻿using PV260.Client.ConsoleApp.Components.Enums;
 using PV260.Client.ConsoleApp.Components.Interfaces;
-using PV260.Client.ConsoleApp.Components.Navigation;
 using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
 using Spectre.Console;
 
@@ -13,12 +12,13 @@ internal class ConsoleApplication(
 {
     private readonly IContentRouter _contentRouter = contentRouter;
     private readonly ILayoutBuilder _layoutBuilder = layoutBuilder;
-    private readonly INavigationService _navigationService = navigationService;
 
     private readonly MenuItems[] _mainMenuItems =
     [
-        MenuItems.Home, MenuItems.Reports, MenuItems.Emails, MenuItems.About
+        MenuItems.Home, MenuItems.LatestGeneratedReport, MenuItems.Reports, MenuItems.Emails, MenuItems.About
     ];
+
+    private readonly INavigationService _navigationService = navigationService;
 
     private int _mainSelected;
     private bool _running = true;
@@ -35,8 +35,8 @@ internal class ConsoleApplication(
 
             var layout = _layoutBuilder
                 .WithHeader()
-                .WithNavigation(GetCurrentNavItems(), GetCurrentSelectedIndex())
                 .WithContent(component.Render())
+                .WithNavigation(GetCurrentNavItems(), GetCurrentSelectedIndex())
                 .WithFooter()
                 .Build();
 
@@ -59,20 +59,38 @@ internal class ConsoleApplication(
             return;
         }
 
-        if (!component.IsInSubMenu)
+        switch (component)
         {
-            HandleMainNavigation(key);
-            return;
-        }
+            case INavigationComponent navigationComponent:
+            {
+                navigationComponent.Navigate(key.Key);
+                navigationComponent.HandleInput(key.Key, _navigationService);
 
-        if (component is INavigationComponent navComponent)
-        {
-            navComponent.Navigate(key.Key);
-            navComponent.HandleInput(key, _navigationService);
-        }
-        else if (component is IContentComponent contentComponent)
-        {
-            contentComponent.HandleInput(key);
+                if (key.Key != ConsoleKey.Backspace)
+                {
+                    return;
+                }
+
+                if (_navigationService.CanGoBack)
+                {
+                    _navigationService.Pop();
+                }
+
+                break;
+            }
+            case IContentComponent when
+                _navigationService.LastNavigationComponent is INavigationComponent navigationComponent:
+                navigationComponent.HandleInput(key.Key, _navigationService);
+                break;
+            default:
+            {
+                if (!component.IsInSubMenu)
+                {
+                    HandleMainNavigation(key);
+                }
+
+                break;
+            }
         }
     }
 
@@ -94,6 +112,7 @@ internal class ConsoleApplication(
                 {
                     _navigationService.Pop();
                 }
+
                 break;
         }
     }
@@ -104,12 +123,12 @@ internal class ConsoleApplication(
 
         return current switch
         {
-            INavigationComponent currentNavigationComponent => currentNavigationComponent.GetNavigationItems(),
+            INavigationComponent currentNavigationComponent when currentNavigationComponent.NavigationItems.Any() =>
+                currentNavigationComponent.NavigationItems,
             IContentComponent when
-                _navigationService.LastNavigationComponent is INavigationComponent navigationComponent =>
-                navigationComponent
-                    .GetNavigationItems(),
-            _ => _mainMenuItems.Select(m => m.ToString()).ToArray()
+                _navigationService.LastNavigationComponent is INavigationComponent navigationComponent &&
+                navigationComponent.NavigationItems.Any() => navigationComponent.NavigationItems,
+            _ => _mainMenuItems.Any() ? _mainMenuItems.Select(m => m.ToString()).ToArray() : []
         };
     }
 

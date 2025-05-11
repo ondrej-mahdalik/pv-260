@@ -67,7 +67,7 @@ public class ReportFacade(
 
         return new PaginatedResponse<ReportListModel>
         {
-            Items = Mapper.ToListModel(currentPage),
+            Items = Mapper.ToListModel(currentPage).ToList(),
             PageSize = paginationCursor.PageSize,
             TotalCount = await repository.Get().CountAsync(),
             NextCursor = hasNextPage && last is not null

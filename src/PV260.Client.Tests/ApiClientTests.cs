@@ -26,14 +26,24 @@ namespace PV260.Client.Tests
         public async Task GetAllReportsAsync_ReturnsReports()
         {
             // Arrange
-            var expectedReports = new List<ReportListModel>
+            var paginationCursor = new PaginationCursor
             {
-                new()
-                {
-                    Name = "Test",
-                    CreatedAt = new DateTime(2025, 4, 9, 12, 36, 22)
-                }
+                PageSize = 10,
             };
+
+            var expectedReports = new PaginatedResponse<ReportListModel>
+            {
+                Items = new List<ReportListModel>()
+                { new()
+                    {
+                        Name = "Test",
+                        CreatedAt = new DateTime(2025, 4, 9, 12, 36, 22)
+                    }
+                },
+                PageSize = 10,
+                TotalCount = 1
+            };
+
             _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>(
                     "SendAsync",
@@ -46,11 +56,11 @@ namespace PV260.Client.Tests
                 });
 
             // Act
-            var reports = await _apiClient.GetAllReportsAsync();
+            var reports = await _apiClient.GetAllReportsAsync(paginationCursor);
 
             // Assert
             Assert.NotNull(reports);
-            Assert.Single(reports);
+            Assert.Single(reports.Items);
         }
 
         [Fact]
