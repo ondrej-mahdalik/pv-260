@@ -31,6 +31,7 @@
         <ProjectReference Include="..\PV260.Client.ConsoleApp\PV260.Client.ConsoleApp.csproj" />
         <ProjectReference Include="..\PV260.Client.Mock\PV260.Client.Mock.csproj" />
         <ProjectReference Include="..\PV260.Common\PV260.Common.csproj" />
+        <ProjectReference Include="..\PV260.Tests.Common\PV260.Tests.Common.csproj" />
     </ItemGroup>
 
 </Project>

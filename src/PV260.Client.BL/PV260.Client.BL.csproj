@@ -9,5 +9,10 @@
     <ItemGroup>
 	    <ProjectReference Include="..\PV260.Common\PV260.Common.csproj" />
     </ItemGroup>
+	
+    <ItemGroup>
+      <PackageReference Include="Polly" Version="8.5.2" />
+      <PackageReference Include="Polly.Extensions" Version="8.5.2" />
+    </ItemGroup>
 
 </Project>
