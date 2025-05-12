@@ -9,7 +9,7 @@ namespace PV260.Client.ConsoleApp.Components.Content.Emails.EmailContent;
 
 internal class EmailClearComponent(
     IApiClient apiClient,
-    INavigationService navigationService) : IContentComponent
+    INavigationService navigationService) : IAsyncContentComponent
 {
     private const string HeaderName = "Deleting all emails";
 
@@ -18,10 +18,11 @@ internal class EmailClearComponent(
 
     public bool IsInSubMenu => false;
 
-    public IRenderable Render()
+    public async Task<IRenderable> RenderAsync()
     {
         try
         {
+            AnsiConsole.Clear();
             var confirmation =
                 AnsiConsole.Confirm("[bold red]Are you sure you want to remove all email recipients?[/]");
 
@@ -33,7 +34,7 @@ internal class EmailClearComponent(
                     .Build();
             }
 
-            _apiClient.DeleteAllEmailsAsync().Wait(); // Synchronous call for simplicity
+            await _apiClient.DeleteAllEmailsAsync();
 
             return new EmailContentPanelBuilder()
                 .WithHeader(HeaderName)
@@ -54,7 +55,11 @@ internal class EmailClearComponent(
         }
     }
 
-    public void HandleInput(ConsoleKeyInfo key)
+    public Task HandleInputAsync(ConsoleKeyInfo key)
     {
+        return Task.CompletedTask;
     }
+    
+    public IRenderable Render()
+        => throw new NotSupportedException();
 }

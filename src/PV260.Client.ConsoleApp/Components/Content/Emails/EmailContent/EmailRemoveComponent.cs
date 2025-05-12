@@ -10,7 +10,7 @@ namespace PV260.Client.ConsoleApp.Components.Content.Emails.EmailContent;
 
 internal class EmailRemoveComponent(
     IApiClient apiClient,
-    INavigationService navigationService) : IContentComponent
+    INavigationService navigationService) : IAsyncContentComponent
 {
     private const string HeaderName = "Email deletion";
 
@@ -19,7 +19,7 @@ internal class EmailRemoveComponent(
 
     public bool IsInSubMenu => false;
 
-    public IRenderable Render()
+    public async Task<IRenderable> RenderAsync()
     {
         try
         {
@@ -28,8 +28,7 @@ internal class EmailRemoveComponent(
                 PageSize = 1000
             };
 
-            var emailList =
-                _apiClient.GetAllEmailsAsync(paginationCursor).Result; // Synchronous call for simplicity in console apps
+            var emailList = await _apiClient.GetAllEmailsAsync(paginationCursor);
 
             if (!emailList.Items.Any())
             {
@@ -39,13 +38,14 @@ internal class EmailRemoveComponent(
                     .Build();
             }
 
+            AnsiConsole.Clear();
             var emailToRemove = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[bold red]Select an email address to remove:[/]")
                     .PageSize(10)
                     .AddChoices(emailList.Items.Select(e => e.EmailAddress)));
 
-            _apiClient.DeleteEmailAsync(emailToRemove).Wait(); // Synchronous call for simplicity
+            await _apiClient.DeleteEmailAsync(emailToRemove);
 
             return new EmailContentPanelBuilder()
                 .WithHeader(HeaderName)
@@ -66,7 +66,11 @@ internal class EmailRemoveComponent(
         }
     }
 
-    public void HandleInput(ConsoleKeyInfo key)
+    public Task HandleInputAsync(ConsoleKeyInfo key)
     {
+        return Task.CompletedTask;
     }
+    
+    public IRenderable Render()
+        => throw new NotSupportedException();
 }

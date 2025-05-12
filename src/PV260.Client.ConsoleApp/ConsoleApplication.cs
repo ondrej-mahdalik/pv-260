@@ -1,7 +1,9 @@
-﻿using PV260.Client.ConsoleApp.Components.Enums;
-using PV260.Client.ConsoleApp.Components.Interfaces;
+﻿using PV260.Client.ConsoleApp.Components.Interfaces;
+using PV260.Client.ConsoleApp.Components.Layout.Enums;
+using PV260.Client.ConsoleApp.Components.Layout.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace PV260.Client.ConsoleApp;
 
@@ -15,7 +17,7 @@ internal class ConsoleApplication(
 
     private readonly MenuItems[] _mainMenuItems =
     [
-        MenuItems.Home, MenuItems.LatestGeneratedReport, MenuItems.Reports, MenuItems.Emails, MenuItems.About
+        MenuItems.LatestGeneratedReport, MenuItems.Reports, MenuItems.Emails, MenuItems.About
     ];
 
     private readonly INavigationService _navigationService = navigationService;
@@ -23,35 +25,55 @@ internal class ConsoleApplication(
     private int _mainSelected;
     private bool _running = true;
 
-    public void Run()
+    public async Task RunAsync()
     {
         _navigationService.Push(_contentRouter.Route(MenuItems.Home));
 
         while (_running)
         {
             var component = _navigationService.Current;
+            IRenderable? content;
 
+            if (component is IAsyncRenderableComponent asyncRenderableComponent)
+            {
+                // Display loading screen
+                AnsiConsole.Clear();
+                var loadingLayout = await _layoutBuilder
+                    .WithHeader()
+                    .WithLoadingContent()
+                    .WithFooter()
+                    .BuildAsync();
+
+                AnsiConsole.Write(loadingLayout);
+                
+                content = await asyncRenderableComponent.RenderAsync();
+            }
+            else
+            {
+                content = component.Render();
+            }
+
+            // Display the content
             AnsiConsole.Clear();
-
-            var layout = _layoutBuilder
+            var layout = await _layoutBuilder
                 .WithHeader()
-                .WithContent(component.Render())
+                .WithContent(content)
                 .WithNavigation(GetCurrentNavItems(), GetCurrentSelectedIndex())
                 .WithFooter()
-                .Build();
+                .BuildAsync();
 
             AnsiConsole.Write(layout);
 
             var key = Console.ReadKey(true);
 
-            DelegateNavigation(component, key);
+            await DelegateNavigationAsync(component, key);
         }
 
         AnsiConsole.Clear();
         AnsiConsole.MarkupLine("[green]Thanks for using PV260 Report Generator![/]");
     }
 
-    private void DelegateNavigation(IRenderableComponent component, ConsoleKeyInfo key)
+    private async Task DelegateNavigationAsync(IRenderableComponent component, ConsoleKeyInfo key)
     {
         if (key.Key == ConsoleKey.Escape)
         {
@@ -61,6 +83,24 @@ internal class ConsoleApplication(
 
         switch (component)
         {
+            case IAsyncNavigationComponent asyncNavigationComponent:
+            {
+                asyncNavigationComponent.Navigate(key.Key);
+                await asyncNavigationComponent.HandleInputAsync(key.Key, _navigationService);
+
+                if (key.Key != ConsoleKey.Backspace)
+                {
+                    return;
+                }
+
+                if (_navigationService.CanGoBack)
+                {
+                    _navigationService.Pop();
+                }
+
+                break;
+            }
+            
             case INavigationComponent navigationComponent:
             {
                 navigationComponent.Navigate(key.Key);
@@ -78,10 +118,22 @@ internal class ConsoleApplication(
 
                 break;
             }
-            case IContentComponent when
-                _navigationService.LastNavigationComponent is INavigationComponent navigationComponent:
-                navigationComponent.HandleInput(key.Key, _navigationService);
+            
+            case IContentComponent when _navigationService.LastNavigationComponent is not null:
+            {
+                switch (_navigationService.LastNavigationComponent)
+                {
+                    case IAsyncNavigationComponent asyncNavigationComponent:
+                        await asyncNavigationComponent.HandleInputAsync(key.Key, _navigationService);
+                        break;
+                    case INavigationComponent navigationComponent:
+                        navigationComponent.HandleInput(key.Key, _navigationService);
+                        break;
+                }
+
                 break;
+            }
+            
             default:
             {
                 if (!component.IsInSubMenu)

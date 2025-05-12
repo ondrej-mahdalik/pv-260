@@ -7,7 +7,7 @@ using Spectre.Console.Rendering;
 
 namespace PV260.Client.ConsoleApp.Components.Content.Reports.ReportDetail;
 
-internal abstract class ReportDetailComponentBase(IApiClient apiClient) : INavigationComponent
+internal abstract class ReportDetailComponentBase(IApiClient apiClient) : IAsyncNavigationComponent
 {
     protected readonly IApiClient ApiClient = apiClient;
     public PageStatus? SendStatus { get; protected set; }
@@ -15,9 +15,9 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : INavig
     public string[] NavigationItems { get; protected set; } = [];
     public bool IsInSubMenu => false;
 
-    public IRenderable Render()
+    public async Task<IRenderable> RenderAsync()
     {
-        var report = GetReport();
+        var report = await GetReportAsync();
 
         if (report is null)
         {
@@ -75,11 +75,11 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : INavig
         };
     }
 
-    public void HandleInput(ConsoleKey key, INavigationService _)
+    public async Task HandleInputAsync(ConsoleKey key, INavigationService _)
     {
         if (key == ConsoleKey.S)
         {
-            var report = GetReport();
+            var report = await GetReportAsync();
 
             if (report is null)
             {
@@ -88,7 +88,8 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : INavig
 
             try
             {
-                ApiClient.SendReportAsync(report.Id);
+                await ApiClient.SendReportAsync(report.Id);
+                await Task.Delay(500); // Simulate some delay for better UX
 
                 SendStatus = new PageStatus
                 {
@@ -106,6 +107,9 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : INavig
             }
         }
     }
+    
+    public IRenderable Render()
+        => throw new NotSupportedException();
 
     private PaginationSettings CalculateRecordsPaging(int recordCount)
     {
@@ -118,6 +122,6 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : INavig
         return paginationSettings;
     }
 
-    protected abstract ReportDetailModel? GetReport();
+    protected abstract Task<ReportDetailModel?> GetReportAsync();
     protected abstract string GetHeader();
 }

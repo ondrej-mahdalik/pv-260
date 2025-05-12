@@ -3,8 +3,9 @@ using PV260.Client.ConsoleApp.Components.Content;
 using PV260.Client.ConsoleApp.Components.Content.Emails.EmailOptions;
 using PV260.Client.ConsoleApp.Components.Content.Reports.ReportDetail;
 using PV260.Client.ConsoleApp.Components.Content.Reports.ReportOptions;
-using PV260.Client.ConsoleApp.Components.Enums;
 using PV260.Client.ConsoleApp.Components.Interfaces;
+using PV260.Client.ConsoleApp.Components.Layout.Enums;
+using PV260.Client.ConsoleApp.Components.Layout.Interfaces;
 
 namespace PV260.Client.ConsoleApp.Components;
 

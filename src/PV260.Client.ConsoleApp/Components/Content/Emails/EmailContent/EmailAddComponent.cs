@@ -10,7 +10,7 @@ namespace PV260.Client.ConsoleApp.Components.Content.Emails.EmailContent;
 
 internal class EmailAddComponent(
     IApiClient apiClient,
-    INavigationService navigationService) : IContentComponent
+    INavigationService navigationService) : IAsyncContentComponent
 {
     private const string HeaderName = "Email creation";
 
@@ -19,10 +19,11 @@ internal class EmailAddComponent(
 
     public bool IsInSubMenu => false;
 
-    public IRenderable Render()
+    public async Task<IRenderable> RenderAsync()
     {
         try
         {
+            AnsiConsole.Clear();
             var emailAddress = AnsiConsole.Prompt(
                 new TextPrompt<string>("[bold green]Enter the email address to add:[/]").Validate(email =>
                     EmailHelper.IsValidEmail(email) switch
@@ -37,7 +38,7 @@ internal class EmailAddComponent(
                 CreatedAt = DateTime.UtcNow
             };
 
-            _apiClient.AddEmailAsync(emailRecipient).Wait(); // Synchronous call for simplicity
+            await _apiClient.AddEmailAsync(emailRecipient);
 
             return new EmailContentPanelBuilder()
                 .WithHeader(HeaderName)
@@ -58,7 +59,11 @@ internal class EmailAddComponent(
         }
     }
 
-    public void HandleInput(ConsoleKeyInfo key)
+    public Task HandleInputAsync(ConsoleKeyInfo key)
     {
+        return Task.CompletedTask;
     }
+    
+    public IRenderable Render()
+        => throw new NotSupportedException();
 }

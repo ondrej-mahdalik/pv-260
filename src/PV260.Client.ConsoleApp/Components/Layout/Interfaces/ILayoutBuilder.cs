@@ -1,6 +1,7 @@
-﻿using Spectre.Console.Rendering;
+﻿using PV260.Client.ConsoleApp.Components.Interfaces;
+using Spectre.Console.Rendering;
 
-namespace PV260.Client.ConsoleApp.Components.Interfaces;
+namespace PV260.Client.ConsoleApp.Components.Layout.Interfaces;
 
 internal interface ILayoutBuilder
 {
@@ -8,5 +9,5 @@ internal interface ILayoutBuilder
     LayoutBuilder WithNavigation(string[] menuItems, int selected);
     LayoutBuilder WithContent(IRenderable content);
     LayoutBuilder WithFooter();
-    IRenderable Build();
+    Task<IRenderable> BuildAsync();
 }

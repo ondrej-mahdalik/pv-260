@@ -1,8 +1,8 @@
-﻿using PV260.Client.ConsoleApp.Components.Interfaces;
+﻿using PV260.Client.ConsoleApp.Components.Layout.Interfaces;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
-namespace PV260.Client.ConsoleApp.Components;
+namespace PV260.Client.ConsoleApp.Components.Layout;
 
 internal class FooterComponent : IFooterComponent
 {

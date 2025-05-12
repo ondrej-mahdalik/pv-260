@@ -8,9 +8,10 @@ internal class LatestGeneratedReportComponent(IApiClient apiClient)
 {
     private ReportDetailModel? _latestReport;
 
-    protected override ReportDetailModel? GetReport()
+    protected override async Task<ReportDetailModel?> GetReportAsync()
     {
-        _latestReport = ApiClient.GetLatestReportAsync().Result;
+        _latestReport = await ApiClient.GetLatestReportAsync();
+        await Task.Delay(500); // Simulate some delay for better UX
 
         return _latestReport;
     }

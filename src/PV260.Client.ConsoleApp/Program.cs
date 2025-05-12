@@ -6,6 +6,8 @@ using PV260.Client.BL;
 using PV260.Client.ConsoleApp;
 using PV260.Client.ConsoleApp.Components;
 using PV260.Client.ConsoleApp.Components.Interfaces;
+using PV260.Client.ConsoleApp.Components.Layout;
+using PV260.Client.ConsoleApp.Components.Layout.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation;
 using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
 using PV260.Client.Mock;
@@ -41,4 +43,4 @@ var app = host.Services.GetRequiredService<ConsoleApplication>();
 
 _ = host.RunAsync();
 
-app.Run();
+await app.RunAsync();

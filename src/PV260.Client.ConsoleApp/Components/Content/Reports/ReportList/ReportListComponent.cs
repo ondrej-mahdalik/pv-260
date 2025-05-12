@@ -8,7 +8,7 @@ using Spectre.Console.Rendering;
 
 namespace PV260.Client.ConsoleApp.Components.Content.Reports.ReportList;
 
-internal class ReportListComponent(IApiClient apiClient) : INavigationComponent
+internal class ReportListComponent(IApiClient apiClient) : IAsyncNavigationComponent
 {
     private const string HeaderName = "Reports List";
 
@@ -44,7 +44,7 @@ internal class ReportListComponent(IApiClient apiClient) : INavigationComponent
         HandlePageStack(key);
     }
 
-    public IRenderable Render()
+    public async Task<IRenderable> RenderAsync()
     {
         var paginationCursor = new PaginationCursor
         {
@@ -53,7 +53,8 @@ internal class ReportListComponent(IApiClient apiClient) : INavigationComponent
             LastId = _pageInformation.ListPageStack.Model?.Id
         };
 
-        var paginatedReportsResponse = _apiClient.GetAllReportsAsync(paginationCursor).Result;
+        var paginatedReportsResponse = await _apiClient.GetAllReportsAsync(paginationCursor);
+        await Task.Delay(500); // Simulate some delay for better UX
 
         if (!paginatedReportsResponse.Items.Any())
         {
@@ -80,7 +81,7 @@ internal class ReportListComponent(IApiClient apiClient) : INavigationComponent
             .Build();
     }
 
-    public void HandleInput(ConsoleKey key, INavigationService navigationService)
+    public Task HandleInputAsync(ConsoleKey key, INavigationService navigationService)
     {
         switch (key)
         {
@@ -101,7 +102,12 @@ internal class ReportListComponent(IApiClient apiClient) : INavigationComponent
 
                 break;
         }
+        
+        return Task.CompletedTask;
     }
+    
+    public IRenderable Render()
+        => throw new NotSupportedException();
 
     private void CalculateRecordListPaging(int recordCount)
     {
