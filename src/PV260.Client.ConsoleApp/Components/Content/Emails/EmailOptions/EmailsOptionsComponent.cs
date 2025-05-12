@@ -11,8 +11,6 @@ internal class EmailsOptionsComponent(IApiClient apiClient) : INavigationCompone
 {
     private const string HeaderName = "Report Options List";
 
-    private readonly IApiClient _apiClient = apiClient;
-
     private readonly EmailOptions[] _emailOptions =
     [
         EmailOptions.ListEmailRecipients,
@@ -48,32 +46,21 @@ internal class EmailsOptionsComponent(IApiClient apiClient) : INavigationCompone
 
         IRenderableComponent emailContentComponent = selectedOption switch
         {
-            EmailOptions.ListEmailRecipients => new EmailListComponent(_apiClient),
-            EmailOptions.AddEmailRecipient => new EmailAddComponent(_apiClient, navigationService),
-            EmailOptions.RemoveEmailRecipient => new EmailRemoveComponent(_apiClient, navigationService),
-            EmailOptions.ClearEmailRecipients => new EmailClearComponent(_apiClient, navigationService),
-            _ => new EmailListComponent(_apiClient)
+            EmailOptions.ListEmailRecipients => new EmailListComponent(apiClient),
+            EmailOptions.AddEmailRecipient => new EmailAddComponent(apiClient, navigationService),
+            EmailOptions.RemoveEmailRecipient => new EmailRemoveComponent(apiClient, navigationService),
+            EmailOptions.ClearEmailRecipients => new EmailClearComponent(apiClient, navigationService),
+            _ => new EmailListComponent(apiClient)
         };
 
         navigationService.Push(emailContentComponent);
     }
-
+    
     public IRenderable Render()
     {
         var emailOptionPanelBuilder = new EmailOptionPanelBuilder()
             .WithHeader(HeaderName)
             .WithList(_emailOptions, SelectedIndex);
-
-        //switch (PageStatus)
-        //{
-        //    case { IsSuccess: true }:
-        //        reportOptionPanelBuilder.WithSuccess(PageStatus.StatusMessage, MessageSize.TableRow);
-        //        break;
-
-        //    case { IsSuccess: false }:
-        //        reportOptionPanelBuilder.WithError(PageStatus.StatusMessage, MessageSize.TableRow);
-        //        break;
-        //}
 
         return emailOptionPanelBuilder.Build();
     }

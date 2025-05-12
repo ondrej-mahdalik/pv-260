@@ -7,7 +7,7 @@ using Spectre.Console.Rendering;
 
 namespace PV260.Client.ConsoleApp.Components.Content.Emails.EmailList;
 
-internal class EmailListComponent(IApiClient apiClient) : INavigationComponent
+internal class EmailListComponent(IApiClient apiClient) : IAsyncNavigationComponent
 {
     private const string HeaderName = "Email recipients List";
 
@@ -43,7 +43,7 @@ internal class EmailListComponent(IApiClient apiClient) : INavigationComponent
         HandlePageStack(key);
     }
 
-    public IRenderable Render()
+    public async Task<IRenderable> RenderAsync()
     {
         var paginationCursor = new PaginationCursor
         {
@@ -52,7 +52,8 @@ internal class EmailListComponent(IApiClient apiClient) : INavigationComponent
             LastId = _pageInformation.ListPageStack.Model?.CreatedAt is null ? null : Guid.Empty
         };
 
-        var paginatedEmailsResponse = _apiClient.GetAllEmailsAsync(paginationCursor).Result;
+        var paginatedEmailsResponse = await _apiClient.GetAllEmailsAsync(paginationCursor);
+        await Task.Delay(500); // Simulate some delay for better UX
 
         if (!paginatedEmailsResponse.Items.Any())
         {
@@ -75,7 +76,7 @@ internal class EmailListComponent(IApiClient apiClient) : INavigationComponent
             .Build();
     }
 
-    public void HandleInput(ConsoleKey key, INavigationService navigationService)
+    public Task HandleInputAsync(ConsoleKey key, INavigationService navigationService)
     {
         _pageInformation.SelectedPageIndex = key switch
         {
@@ -84,7 +85,12 @@ internal class EmailListComponent(IApiClient apiClient) : INavigationComponent
             ConsoleKey.RightArrow => (_pageInformation.SelectedPageIndex + 1) % _pageInformation.PageSize,
             _ => _pageInformation.SelectedPageIndex
         };
+        
+        return Task.CompletedTask;
     }
+    
+    public IRenderable Render()
+        => throw new NotSupportedException();
 
     private void CalculateEmailListPaging(int recordCount)
     {

@@ -8,7 +8,7 @@ using Spectre.Console.Rendering;
 namespace PV260.Client.ConsoleApp.Components.Content.Reports.ReportOptions;
 
 internal class ReportsOptionsComponent(IApiClient apiClient)
-    : INavigationComponent
+    : IAsyncNavigationComponent
 {
     private const string HeaderName = "Report Options List";
 
@@ -42,7 +42,7 @@ internal class ReportsOptionsComponent(IApiClient apiClient)
         SelectedIndex = (SelectedIndex + delta + _reportOptions.Length) % _reportOptions.Length;
     }
 
-    public IRenderable Render()
+    public Task<IRenderable> RenderAsync()
     {
         var reportOptionPanelBuilder = new ReportOptionPanelBuilder()
             .WithHeader(HeaderName)
@@ -59,10 +59,10 @@ internal class ReportsOptionsComponent(IApiClient apiClient)
                 break;
         }
 
-        return reportOptionPanelBuilder.Build();
+        return Task.FromResult(reportOptionPanelBuilder.Build());
     }
 
-    public void HandleInput(ConsoleKey key, INavigationService navigationService)
+    public async Task HandleInputAsync(ConsoleKey key, INavigationService navigationService)
     {
         if (key != ConsoleKey.Enter)
         {
@@ -76,7 +76,7 @@ internal class ReportsOptionsComponent(IApiClient apiClient)
         switch (selectedOption)
         {
             case ReportOptions.GenerateNewReport:
-                GenerateNewReport();
+                await GenerateNewReportAsync();
                 break;
 
             case ReportOptions.ListReports:
@@ -84,12 +84,16 @@ internal class ReportsOptionsComponent(IApiClient apiClient)
                 break;
         }
     }
+    
+    public IRenderable Render()
+        => throw new NotSupportedException();
 
-    private void GenerateNewReport()
+    private async Task GenerateNewReportAsync()
     {
         try
         {
-            _apiClient.GenerateNewReportAsync();
+            await _apiClient.GenerateNewReportAsync();
+            await Task.Delay(500); // Simulate some delay for better UX
 
             PageStatus = new PageStatus
             {

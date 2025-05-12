@@ -9,9 +9,10 @@ internal class ReportDetailComponent(IApiClient apiClient, Guid reportId)
     private readonly Guid _reportId = reportId;
     private ReportDetailModel? _report;
 
-    protected override ReportDetailModel? GetReport()
+    protected override async Task<ReportDetailModel?> GetReportAsync()
     {
-        _report = ApiClient.GetReportByIdAsync(_reportId).Result;
+        _report = await ApiClient.GetReportByIdAsync(_reportId);
+        await Task.Delay(500); // Simulate some delay for better UX
         return _report;
     }
 

@@ -16,7 +16,5 @@ internal class AboutContentComponent : IContentComponent
             .Expand();
     }
 
-    public void HandleInput(ConsoleKeyInfo key)
-    {
-    }
+    public void HandleInput(ConsoleKeyInfo key) { }
 }
