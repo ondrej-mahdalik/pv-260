@@ -8,14 +8,14 @@ internal static class EmailEntitySeeds
     public static readonly EmailRecipientEntity Entity1 = new()
     {
         Id = new Guid("DFD3FE56-BE05-4280-BC24-92713E7539CB"),
-        CreatedAt = new DateTime(2025, 4, 16, 5, 46, 01),
+        CreatedAt = DateTime.UtcNow.AddDays(-2),
         EmailAddress = "test@test.com"
     };
 
     public static readonly EmailRecipientEntity Entity2 = new()
     {
         Id = new Guid("A276F8D4-9224-4C50-9A0D-9467C39FD8B3"),
-        CreatedAt = new DateTime(2025, 4, 16, 5, 51, 23),
+        CreatedAt = DateTime.UtcNow.AddHours(-5),
         EmailAddress = "test2@test.com"
     };
     
