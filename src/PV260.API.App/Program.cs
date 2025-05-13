@@ -3,6 +3,7 @@ using PV260.API.BL.Options;
 using PV260.API.DAL.Extensions;
 using PV260.API.DAL.Migrator;
 using PV260.API.DAL.Options;
+using PV260.API.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<DalOptions>(builder.Configuration.GetSection("DalSettings"));
@@ -15,6 +16,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDalServices();
 builder.Services.AddDBlServices();
+builder.Services.AddInfrastructureServices();
 
 var app = builder.Build();
 

@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PV260.API.BL.Options;
+using PV260.API.BL.Services;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
-namespace PV260.API.BL.Services;
+namespace PV260.API.Infrastructure.Services;
 
 /// <summary>
 /// An implementation of the IEmailService interface that uses SendGrid for sending emails.

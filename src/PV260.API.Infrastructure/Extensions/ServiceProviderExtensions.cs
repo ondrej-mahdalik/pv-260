@@ -2,10 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PV260.API.BL.Invocables;
+using PV260.API.BL;
 using PV260.API.BL.Options;
+using PV260.API.Infrastructure.Invocables;
 
-namespace PV260.API.BL.Extensions;
+namespace PV260.API.Infrastructure.Extensions;
 
 /// <summary>
 /// Provides extension methods for adding scheduled tasks to the service provider.
