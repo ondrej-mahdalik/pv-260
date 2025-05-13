@@ -53,7 +53,6 @@ internal class EmailListComponent(IApiClient apiClient) : IAsyncNavigationCompon
         };
 
         var paginatedEmailsResponse = await _apiClient.GetAllEmailsAsync(paginationCursor);
-        await Task.Delay(500); // Simulate some delay for better UX
 
         if (!paginatedEmailsResponse.Items.Any())
         {
