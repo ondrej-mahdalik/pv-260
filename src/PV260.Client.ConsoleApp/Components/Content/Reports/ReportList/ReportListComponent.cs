@@ -54,7 +54,6 @@ internal class ReportListComponent(IApiClient apiClient) : IAsyncNavigationCompo
         };
 
         var paginatedReportsResponse = await _apiClient.GetAllReportsAsync(paginationCursor);
-        await Task.Delay(500); // Simulate some delay for better UX
 
         if (!paginatedReportsResponse.Items.Any())
         {

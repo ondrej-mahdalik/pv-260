@@ -89,7 +89,6 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : IAsync
             try
             {
                 await ApiClient.SendReportAsync(report.Id);
-                await Task.Delay(500); // Simulate some delay for better UX
 
                 SendStatus = new PageStatus
                 {

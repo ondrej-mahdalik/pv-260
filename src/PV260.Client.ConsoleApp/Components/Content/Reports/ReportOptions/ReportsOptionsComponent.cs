@@ -93,7 +93,6 @@ internal class ReportsOptionsComponent(IApiClient apiClient)
         try
         {
             await _apiClient.GenerateNewReportAsync();
-            await Task.Delay(500); // Simulate some delay for better UX
 
             PageStatus = new PageStatus
             {
