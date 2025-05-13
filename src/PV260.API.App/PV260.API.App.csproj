@@ -20,6 +20,7 @@
     <ItemGroup>
       <ProjectReference Include="..\PV260.API.BL\PV260.API.BL.csproj" />
       <ProjectReference Include="..\PV260.API.DAL\PV260.API.DAL.csproj" />
+      <ProjectReference Include="..\PV260.API.Infrastructure\PV260.API.Infrastructure.csproj" />
       <ProjectReference Include="..\PV260.API.Presentation\PV260.API.Presentation.csproj" />
       <ProjectReference Include="..\PV260.Common\PV260.Common.csproj" />
     </ItemGroup>

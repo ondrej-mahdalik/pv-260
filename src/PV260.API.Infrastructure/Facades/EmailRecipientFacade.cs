@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PV260.API.BL.Facades;
 using PV260.API.BL.Mappers;
 using PV260.API.DAL.Entities;
 using PV260.API.DAL.UnitOfWork;
 using PV260.Common.Models;
 
-namespace PV260.API.BL.Facades;
+namespace PV260.API.Infrastructure.Facades;
 
 /// <inheritdoc />
 public class EmailRecipientFacade(

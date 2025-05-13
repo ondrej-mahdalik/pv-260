@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using PV260.API.BL.Facades;
 
-namespace PV260.API.BL.Invocables;
+namespace PV260.API.Infrastructure.Invocables;
 
 /// <summary>
 /// Represents a scheduled task for generating reports.
