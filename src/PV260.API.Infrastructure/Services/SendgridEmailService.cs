@@ -30,8 +30,14 @@ public class SendgridEmailService(IOptions<EmailOptions> emailOptions, ILogger<S
         message.AddTo(new EmailAddress(to));
         
         logger.LogDebug("Sending an email to {To} with subject {Subject}", to, subject);
-        await _sendGridClient.SendEmailAsync(message);
-        logger.LogDebug("An Email has been successfully sent to {To} with subject {Subject}", to, subject);
+        var response = await _sendGridClient.SendEmailAsync(message);
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogError("Failed to send an email. Email Integration API response: {responseStatusCode}", response.StatusCode);
+            return;
+        }
+        
+        logger.LogTrace("An Email has been successfully sent to {To} with subject {Subject}", to, subject);
     }
     
     /// <inheritdoc />
@@ -46,14 +52,14 @@ public class SendgridEmailService(IOptions<EmailOptions> emailOptions, ILogger<S
 
         message.AddTos(to.Select(x => new EmailAddress(x)).ToList());
         
-        logger.LogDebug("Sending an email to {To} with subject {Subject}", string.Join(", ", to), subject);
+        logger.LogTrace("Sending an email to {To} with subject {Subject}", string.Join(", ", to), subject);
         var response = await _sendGridClient.SendEmailAsync(message);
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception(
-                $"Failed to send an email. Email Integration API response: {response.StatusCode}, message: {await response.Body.ReadAsStringAsync()} ");
+            logger.LogError("Failed to send an email. Email Integration API response: {responseStatusCode}", response.StatusCode);
+            return;
         }
         
-        logger.LogDebug("An email has been successfully sent to {To} with subject {Subject}", string.Join(", ", to), subject);
+        logger.LogTrace("An email has been successfully sent to {To} with subject {Subject}", string.Join(", ", to), subject);
     }
 }

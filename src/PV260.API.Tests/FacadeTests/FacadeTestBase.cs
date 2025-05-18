@@ -11,6 +11,7 @@ using Moq;
 using PV260.API.BL.Facades;
 using PV260.API.BL.Options;
 using PV260.API.BL.Services;
+using PV260.API.Infrastructure.Services;
 using PV260.API.Presentation.Facades;
 
 namespace PV260.API.Tests.FacadeTests;
@@ -22,6 +23,25 @@ public abstract class FacadeTestBase : IAsyncLifetime
         .Build();
 
     private DbContextContainerFactory? _dbContextFactory;
+    
+    private readonly IOptions<ReportOptions> _reportOptions = Options.Create(new ReportOptions
+    {
+        ReportDaysToKeep = 30,
+        ReportGenerationCron = "0 0 * * *",
+        OldReportCleanupCron = "0 0 * * 0",
+        SendEmailOnReportGeneration = false,
+        ArkFundsCsvUrl = "https://assets.ark-funds.com/fund-documents/funds-etf-csv/ARK_INNOVATION_ETF_ARKK_HOLDINGS.csv"
+    });
+    
+    private readonly IOptions<EmailOptions> _emailOptions = Options.Create(new EmailOptions
+    {
+        ReportEmailSubjectTemplate = "A new report - {ReportName}",
+        ReportEmailBodyTemplate = "Report {ReportName} generated at {ReportTimestamp}. \n\n{ReportRecords}",
+        ReportEmailSenderEmail = "test@test.com",
+        ReportEmailSenderName = "Test Sender",
+        IntegrationApiKey = "test-api-key"
+    });
+    
 
     protected FacadeTestBase()
     {
@@ -36,6 +56,8 @@ public abstract class FacadeTestBase : IAsyncLifetime
     protected IMapper<EmailRecipientEntity, EmailRecipientModel, EmailRecipientModel> EmailRecipientMapper { get; }
     protected Mock<IEmailService> EmailServiceMock { get; } = new();
 
+    protected IReportService ReportService { get; private set; } = null!;
+
     protected IEmailFacade EmailRecipientFacadeSut { get; private set; } = null!;
     protected IReportFacade ReportFacadeSut { get; private set; } = null!;
 
@@ -45,28 +67,14 @@ public abstract class FacadeTestBase : IAsyncLifetime
 
         _dbContextFactory = new DbContextContainerFactory(_container.GetConnectionString());
         UnitOfWorkFactory = new UnitOfWorkFactory(_dbContextFactory);
-
-        var reportOptions = Options.Create(new ReportOptions
-        {
-            ReportDaysToKeep = 30,
-            ReportGenerationCron = "0 0 * * *",
-            OldReportCleanupCron = "0 0 * * 0",
-            SendEmailOnReportGeneration = false,
-            ArkFundsCsvUrl = "https://assets.ark-funds.com/fund-documents/funds-etf-csv/ARK_INNOVATION_ETF_ARKK_HOLDINGS.csv"
-        });
-
-        var emailOptions = Options.Create(new EmailOptions
-        {
-            ReportEmailSubjectTemplate = "A new report - {ReportName}",
-            ReportEmailBodyTemplate = "Report {ReportName} generated at {ReportTimestamp}. \n\n{ReportRecords}",
-            ReportEmailSenderEmail = "test@test.com",
-            ReportEmailSenderName = "Test Sender",
-            IntegrationApiKey = "test-api-key"
-        });
+        
+        ReportService = new ArkFundsReportService(new HttpClient(), _reportOptions,
+            new NullLogger<ArkFundsReportService>());
         
         EmailRecipientFacadeSut = new EmailRecipientFacade(EmailRecipientMapper, UnitOfWorkFactory);
-        ReportFacadeSut = new ReportFacade(ReportMapper, UnitOfWorkFactory, reportOptions,
-            emailOptions, EmailRecipientFacadeSut, EmailServiceMock.Object, new NullLogger<ReportFacade>());
+        ReportFacadeSut = new ReportFacade(ReportMapper, UnitOfWorkFactory, _reportOptions,
+            _emailOptions, EmailRecipientFacadeSut, EmailServiceMock.Object, ReportService,
+            new NullLogger<ReportFacade>());
 
         await using var dbContext = _dbContextFactory.CreateDbContext();
         await dbContext.Database.EnsureCreatedAsync();

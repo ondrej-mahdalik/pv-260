@@ -27,9 +27,9 @@ public interface IReportFacade : ICrudFacade<ReportListModel, ReportDetailModel,
     Task<ReportDetailModel?> GetLatestAsync();
 
     /// <summary>
-    /// Generates a new report by downloading the latest data from ARK Funds and comparing it with the previous report.
+    /// Generates new report, saves it to the database and sends it via email if configured.
     /// </summary>
-    /// <returns>The newly generated report.</returns>
+    /// <returns>New report</returns>
     Task<ReportDetailModel> GenerateReportAsync();
 
     /// <summary>
