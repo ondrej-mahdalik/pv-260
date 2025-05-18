@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
-using PV260.API.BL.Facades;
 using PV260.API.BL.Mappers;
 using PV260.API.DAL.Entities;
 using PV260.API.DAL.UnitOfWork;
@@ -9,9 +8,10 @@ using PV260.Common.Models;
 using Testcontainers.MsSql;
 using Microsoft.Extensions.Options;
 using Moq;
+using PV260.API.BL.Facades;
 using PV260.API.BL.Options;
 using PV260.API.BL.Services;
-using PV260.API.Infrastructure.Facades;
+using PV260.API.Presentation.Facades;
 
 namespace PV260.API.Tests.FacadeTests;
 

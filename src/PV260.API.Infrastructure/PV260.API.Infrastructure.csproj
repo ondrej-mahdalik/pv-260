@@ -13,6 +13,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\PV260.API.BL\PV260.API.BL.csproj" />
+      <ProjectReference Include="..\PV260.API.Presentation\PV260.API.Presentation.csproj" />
     </ItemGroup>
 
 </Project>
