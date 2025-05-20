@@ -4,6 +4,7 @@ using PV260.API.DAL.Extensions;
 using PV260.API.DAL.Migrator;
 using PV260.API.DAL.Options;
 using PV260.API.Infrastructure.Extensions;
+using PV260.API.Presentation.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<DalOptions>(builder.Configuration.GetSection("DalSettings"));
@@ -14,9 +15,11 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDalServices();
-builder.Services.AddDBlServices();
-builder.Services.AddInfrastructureServices();
+builder.Services
+    .AddDalServices()
+    .AddDBlServices()
+    .AddInfrastructureServices()
+    .AddPresentationServices();
 
 var app = builder.Build();
 

@@ -1,6 +1,7 @@
 ﻿using Coravel.Invocable;
 using Microsoft.Extensions.Logging;
 using PV260.API.BL.Facades;
+using PV260.API.Presentation.Facades;
 
 namespace PV260.API.Infrastructure.Invocables;
 

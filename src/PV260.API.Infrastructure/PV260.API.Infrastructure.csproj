@@ -8,11 +8,13 @@
 
     <ItemGroup>
       <PackageReference Include="Coravel" Version="6.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.5" />
       <PackageReference Include="SendGrid" Version="9.29.3" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\PV260.API.BL\PV260.API.BL.csproj" />
+      <ProjectReference Include="..\PV260.API.Presentation\PV260.API.Presentation.csproj" />
     </ItemGroup>
 
 </Project>

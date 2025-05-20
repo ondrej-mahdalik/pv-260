@@ -1,8 +1,10 @@
 ﻿using Coravel;
 using Microsoft.Extensions.DependencyInjection;
-using PV260.API.BL.Facades;
+using Polly;
+using Polly.Extensions.Http;
+using Polly.Retry;
+using Polly.Timeout;
 using PV260.API.BL.Services;
-using PV260.API.Infrastructure.Facades;
 using PV260.API.Infrastructure.Invocables;
 using PV260.API.Infrastructure.Services;
 
@@ -14,10 +16,11 @@ public static class ServiceCollectionExtensions
     {
         // Services
         serviceCollection.AddSingleton<IEmailService, SendgridEmailService>();
-        
-        // Facades
-        serviceCollection.AddSingleton<IReportFacade, ReportFacade>();
-        serviceCollection.AddSingleton<IEmailFacade, EmailRecipientFacade>();
+        serviceCollection.AddHttpClient<IReportService, ArkFundsReportService>()
+            .SetHandlerLifetime(TimeSpan.FromMinutes(5))
+            .AddPolicyHandler(HttpPolicyExtensions.HandleTransientHttpError()
+                .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromMilliseconds(Math.Pow(500, retryAttempt))));
         
         // Invocables
         serviceCollection.AddTransient<GenerateReportInvocable>();
