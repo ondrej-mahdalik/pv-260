@@ -22,7 +22,7 @@ public class ApiClientMock : IApiClient
                 Name = r.Name
             }).Take(paginationCursor.PageSize).ToList(),
             PageSize = 10,
-            TotalCount = 10
+            TotalCount = _reports.Count
         };
         
         // Simulate network delay
