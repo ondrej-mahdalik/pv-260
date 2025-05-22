@@ -14,56 +14,54 @@ internal class EmailRemoveComponent(
 {
     private const string HeaderName = "Email deletion";
 
-    private readonly IApiClient _apiClient = apiClient;
-    private readonly INavigationService _navigationService = navigationService;
-
     public bool IsInSubMenu => false;
 
     public async Task<IRenderable> RenderAsync()
     {
-        try
+        navigationService.Pop();
+        
+        var paginationCursor = new PaginationCursor
         {
-            var paginationCursor = new PaginationCursor
-            {
-                PageSize = 1000
-            };
+            PageSize = 1000
+        };
 
-            var emailList = await _apiClient.GetAllEmailsAsync(paginationCursor);
-
-            if (!emailList.Items.Any())
-            {
-                return new EmailContentPanelBuilder()
-                    .WithHeader(HeaderName)
-                    .WithError("No email recipients found to remove", MessageSize.TableRow)
-                    .Build();
-            }
-
-            AnsiConsole.Clear();
-            var emailToRemove = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("[bold red]Select an email address to remove:[/]")
-                    .PageSize(10)
-                    .AddChoices(emailList.Items.Select(e => e.EmailAddress)));
-
-            await _apiClient.DeleteEmailAsync(emailToRemove);
-
-            return new EmailContentPanelBuilder()
-                .WithHeader(HeaderName)
-                .WithSuccess($"Email address '{emailToRemove}' has been removed successfully!", MessageSize.TableRow)
-                .Build();
-        }
-        catch (Exception)
+        var emailList = await apiClient.GetAllEmailsAsync(paginationCursor);
+        if (emailList.IsError)
         {
             return new EmailContentPanelBuilder()
                 .WithHeader(HeaderName)
-                .WithError("Failed to remove email recipient!",
-                    MessageSize.TableRow)
+                .WithError("Failed to retrieve email recipients!", MessageSize.TableRow)
                 .Build();
         }
-        finally
+
+        if (!emailList.Value.Items.Any())
         {
-            _navigationService.Pop();
+            return new EmailContentPanelBuilder()
+                .WithHeader(HeaderName)
+                .WithError("No email recipients found to remove", MessageSize.TableRow)
+                .Build();
         }
+
+        AnsiConsole.Clear();
+        var emailToRemove = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[bold red]Select an email address to remove:[/]")
+                .PageSize(10)
+                .AddChoices(emailList.Value.Items.Select(e => e.EmailAddress)));
+
+        var emailDeleted = await apiClient.DeleteEmailAsync(emailToRemove);
+        if (emailDeleted.IsError)
+        {
+            return new EmailContentPanelBuilder()
+                .WithHeader(HeaderName)
+                .WithError("Failed to remove email recipient!", MessageSize.TableRow)
+                .Build();
+        }
+
+        return new EmailContentPanelBuilder()
+            .WithHeader(HeaderName)
+            .WithSuccess($"Email address '{emailToRemove}' has been removed successfully!", MessageSize.TableRow)
+            .Build();
     }
 
     public Task HandleInputAsync(ConsoleKeyInfo key)

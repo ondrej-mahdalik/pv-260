@@ -12,8 +12,6 @@ internal class ReportListComponent(IApiClient apiClient) : IAsyncNavigationCompo
 {
     private const string HeaderName = "Reports List";
 
-    private readonly IApiClient _apiClient = apiClient;
-
     private readonly ListPageInformation<ReportListModel> _pageInformation = new();
 
     public int SelectedIndex { get; private set; }
@@ -53,29 +51,37 @@ internal class ReportListComponent(IApiClient apiClient) : IAsyncNavigationCompo
             LastId = _pageInformation.ListPageStack.Model?.Id
         };
 
-        var paginatedReportsResponse = await _apiClient.GetAllReportsAsync(paginationCursor);
+        var paginatedReportsResponse = await apiClient.GetAllReportsAsync(paginationCursor);
 
-        if (!paginatedReportsResponse.Items.Any())
+        if (paginatedReportsResponse.IsError)
         {
             return new ReportOptionPanelBuilder()
                 .WithHeader(HeaderName)
                 .WithError("There was an error getting reports. Please try again", MessageSize.TableRow)
                 .Build();
         }
+        
+        if (!paginatedReportsResponse.Value.Items.Any())
+        {
+            return new ReportOptionPanelBuilder()
+                .WithHeader(HeaderName)
+                .WithMessage("There are no reports to display.", MessageSize.TableRow)
+                .Build();
+        }
 
-        CalculateRecordListPaging(paginatedReportsResponse.TotalCount);
+        CalculateRecordListPaging(paginatedReportsResponse.Value.TotalCount);
 
-        _pageInformation.PageSize = paginatedReportsResponse.Items.Count;
-        _pageInformation.SelectedModel = paginatedReportsResponse.Items[_pageInformation.SelectedPageIndex];
+        _pageInformation.PageSize = paginatedReportsResponse.Value.Items.Count;
+        _pageInformation.SelectedModel = paginatedReportsResponse.Value.Items[_pageInformation.SelectedPageIndex];
 
         if (_pageInformation.PageSize == paginationCursor.PageSize)
         {
-            _pageInformation.ListPageStack.PushModel(paginatedReportsResponse.Items.Last());
+            _pageInformation.ListPageStack.PushModel(paginatedReportsResponse.Value.Items.Last());
         }
         
         return new ReportOptionPanelBuilder()
             .WithHeader(HeaderName)
-            .WithList(paginatedReportsResponse.Items, _pageInformation.SelectedPageIndex)
+            .WithList(paginatedReportsResponse.Value.Items, _pageInformation.SelectedPageIndex)
             .WithMessage("Use <- and -> to navigate between records on page", MessageSize.TableRow)
             .Build();
     }
@@ -95,10 +101,9 @@ internal class ReportListComponent(IApiClient apiClient) : IAsyncNavigationCompo
             case ConsoleKey.Enter:
                 if (_pageInformation.SelectedModel is not null)
                 {
-                    var detailComponent = new ReportDetailComponent(_apiClient, _pageInformation.SelectedModel.Id);
+                    var detailComponent = new ReportDetailComponent(apiClient, _pageInformation.SelectedModel.Id);
                     navigationService.Push(detailComponent);
                 }
-
                 break;
         }
         

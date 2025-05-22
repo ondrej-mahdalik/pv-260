@@ -2,13 +2,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PV260.Client.BL.Extensions;
+using PV260.Client.BL;
 using PV260.Client.ConsoleApp;
 using PV260.Client.ConsoleApp.Components;
 using PV260.Client.ConsoleApp.Components.Layout;
 using PV260.Client.ConsoleApp.Components.Layout.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation;
 using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
+using PV260.Client.Mock;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((hostingContext, config) => { config.AddJsonFile("appsettings.json", true, true); })

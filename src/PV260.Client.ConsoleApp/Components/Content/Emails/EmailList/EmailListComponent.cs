@@ -11,8 +11,6 @@ internal class EmailListComponent(IApiClient apiClient) : IAsyncNavigationCompon
 {
     private const string HeaderName = "Email recipients List";
 
-    private readonly IApiClient _apiClient = apiClient;
-
     private readonly ListPageInformation<EmailRecipientModel> _pageInformation = new();
 
     public int SelectedIndex { get; private set; }
@@ -52,9 +50,8 @@ internal class EmailListComponent(IApiClient apiClient) : IAsyncNavigationCompon
             LastId = _pageInformation.ListPageStack.Model?.CreatedAt is null ? null : Guid.Empty
         };
 
-        var paginatedEmailsResponse = await _apiClient.GetAllEmailsAsync(paginationCursor);
-
-        if (!paginatedEmailsResponse.Items.Any())
+        var paginatedEmailsResponse = await apiClient.GetAllEmailsAsync(paginationCursor);
+        if (paginatedEmailsResponse.IsError)
         {
             return new EmailOptionPanelBuilder()
                 .WithHeader(HeaderName)
@@ -62,15 +59,23 @@ internal class EmailListComponent(IApiClient apiClient) : IAsyncNavigationCompon
                 .Build();
         }
 
-        CalculateEmailListPaging(paginatedEmailsResponse.TotalCount);
+        if (!paginatedEmailsResponse.Value.Items.Any())
+        {
+            return new EmailOptionPanelBuilder()
+                .WithHeader(HeaderName)
+                .WithMessage("There are no email recipients to display.", MessageSize.Expanded)
+                .Build();
+        }
 
-        _pageInformation.PageSize = paginatedEmailsResponse.Items.Count;
-        _pageInformation.SelectedModel = paginatedEmailsResponse.Items[_pageInformation.SelectedPageIndex];
-        _pageInformation.ListPageStack.PushModel(paginatedEmailsResponse.Items.Last());
+        CalculateEmailListPaging(paginatedEmailsResponse.Value.TotalCount);
+
+        _pageInformation.PageSize = paginatedEmailsResponse.Value.Items.Count;
+        _pageInformation.SelectedModel = paginatedEmailsResponse.Value.Items[_pageInformation.SelectedPageIndex];
+        _pageInformation.ListPageStack.PushModel(paginatedEmailsResponse.Value.Items.Last());
 
         return new EmailOptionPanelBuilder()
             .WithHeader(HeaderName)
-            .WithList(paginatedEmailsResponse.Items, _pageInformation.SelectedPageIndex)
+            .WithList(paginatedEmailsResponse.Value.Items, _pageInformation.SelectedPageIndex)
             .WithMessage("Use <- and -> to navigate between records on page", MessageSize.TableRow)
             .Build();
     }
