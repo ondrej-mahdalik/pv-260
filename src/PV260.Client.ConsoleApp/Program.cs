@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PV260.Client.BL;
+using PV260.Client.BL.Extensions;
 using PV260.Client.ConsoleApp;
 using PV260.Client.ConsoleApp.Components;
 using PV260.Client.ConsoleApp.Components.Layout;
