@@ -19,18 +19,27 @@ public class ArkFundsReportService(
     ILogger<ArkFundsReportService> logger) : IReportService
 {
     private readonly ReportOptions _reportOptions = reportOptions.Value;
-    
+
     /// <inheritdoc />
     public async Task<ReportDetailModel> GenerateNewReportAsync(ReportDetailModel? latestReport)
     {
-        var csvData = await httpClient.GetStringAsync(_reportOptions.ArkFundsCsvUrl);
-        var latestRecords = latestReport?.Records.ToDictionary(r => r.Ticker)
-                            ?? new Dictionary<string, ReportRecordModel>();
-        var reportRecords = await ParseCsvDataAsync(csvData, latestRecords);
-        return CreateReportDetail(reportRecords);
+        try
+        {
+            var csvData = await httpClient.GetStringAsync(_reportOptions.ArkFundsCsvUrl);
+            var latestRecords = latestReport?.Records.ToDictionary(r => r.Ticker)
+                                ?? new Dictionary<string, ReportRecordModel>();
+            var reportRecords = await ParseCsvDataAsync(csvData, latestRecords);
+            return CreateReportDetail(reportRecords);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error generating new report");
+            throw;
+        }
     }
 
-    private async Task<List<ReportRecordModel>> ParseCsvDataAsync(string csvData, Dictionary<string, ReportRecordModel> latestRecords)
+    private async Task<List<ReportRecordModel>> ParseCsvDataAsync(string csvData,
+        Dictionary<string, ReportRecordModel> latestRecords)
     {
         var reportRecords = new List<ReportRecordModel>();
         using var reader = new StringReader(csvData);
@@ -40,53 +49,31 @@ public class ArkFundsReportService(
             MissingFieldFound = null,
             BadDataFound = context => logger.LogWarning("Bad data {RawRecord}", context.RawRecord)
         };
-
+        
         using var csv = new CsvReader(reader, config);
-        csv.Context.RegisterClassMap<AkrFundsModelMap>();
-
-        try
+        await foreach (var model in csv.GetRecordsAsync<AkrFundsModel>())
         {
-            // Ensure header is read
-            await csv.ReadAsync();
-            csv.ReadHeader();
+            // Stop on Investors section (if row.Date contains marker)
+            if (model.Date?.Contains("Investors", StringComparison.OrdinalIgnoreCase) ?? false)
+                break;
 
-            // Read records asynchronously
-            await foreach (var model in csv.GetRecordsAsync<AkrFundsModel>())
+            // Track tickers
+            if (string.IsNullOrWhiteSpace(model.Ticker))
+                continue;
+
+            // Compute change percentage
+            var changePercent = model.NumberOfShares >= 0
+                ? CalculateSharesChangePercentage(model.Ticker, model.NumberOfShares, latestRecords)
+                : 0d;
+
+            reportRecords.Add(new ReportRecordModel
             {
-                // Stop on Investors section (if row.Date contains marker)
-                if (model.Date.Contains("Investors", StringComparison.OrdinalIgnoreCase))
-                    break;
-
-                // Track tickers
-                var ticker = model.Ticker;
-                if (string.IsNullOrWhiteSpace(ticker))
-                    continue;
-
-                // Parse numeric fields
-                var sharesText = model.Shares.Replace(",", string.Empty);
-                var numberOfShares = int.TryParse(sharesText, out var s) ? s : -1;
-                var weightText = model.Weight.Replace("%", string.Empty).Trim();
-                var weight = double.TryParse(weightText, NumberStyles.Any, CultureInfo.InvariantCulture, out var w) ? w : 0d;
-
-                // Compute change percentage
-                var changePercent = numberOfShares >= 0
-                    ? CalculateSharesChangePercentage(ticker, numberOfShares, latestRecords)
-                    : 0d;
-
-                reportRecords.Add(new ReportRecordModel
-                {
-                    CompanyName = model.Company,
-                    Ticker = ticker,
-                    NumberOfShares = numberOfShares,
-                    SharesChangePercentage = changePercent,
-                    Weight = weight
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error parsing CSV data");
-            throw;
+                CompanyName = model.Company ?? string.Empty,
+                Ticker = model.Ticker,
+                NumberOfShares = model.NumberOfShares,
+                SharesChangePercentage = changePercent,
+                Weight = model.Weight
+            });
         }
 
         // Add any missing tickers with zero shares
@@ -94,7 +81,8 @@ public class ArkFundsReportService(
         return reportRecords;
     }
 
-    private double CalculateSharesChangePercentage(string ticker, int numberOfShares, Dictionary<string, ReportRecordModel> latestRecords)
+    private double CalculateSharesChangePercentage(string ticker, int numberOfShares,
+        Dictionary<string, ReportRecordModel> latestRecords)
     {
         if (!latestRecords.TryGetValue(ticker, out var latestRecord) || latestRecord.NumberOfShares <= 0)
             return 0d;
@@ -102,7 +90,7 @@ public class ArkFundsReportService(
         logger.LogDebug("Ticker: {Ticker}, Latest Shares: {LatestShares}, Current Shares: {CurrentShares}",
             ticker, latestRecord.NumberOfShares, numberOfShares);
         return (double)(numberOfShares - latestRecord.NumberOfShares)
-               / latestRecord.NumberOfShares * 100d;
+            / latestRecord.NumberOfShares * 100d;
     }
 
     private static void AddMissingTickerRecords(
@@ -110,23 +98,19 @@ public class ArkFundsReportService(
         HashSet<string> currentTickers,
         List<ReportRecordModel> reportRecords)
     {
-        foreach (var kvp in latestRecords)
-        {
-            if (!currentTickers.Contains(kvp.Key))
+        reportRecords.AddRange(from kvp in latestRecords
+            where !currentTickers.Contains(kvp.Key)
+            select new ReportRecordModel
             {
-                reportRecords.Add(new ReportRecordModel
-                {
-                    CompanyName = kvp.Value.CompanyName,
-                    Ticker = kvp.Key,
-                    NumberOfShares = 0,
-                    SharesChangePercentage = -100d,
-                    Weight = 0d
-                });
-            }
-        }
+                CompanyName = kvp.Value.CompanyName,
+                Ticker = kvp.Key,
+                NumberOfShares = 0,
+                SharesChangePercentage = -100d,
+                Weight = 0d
+            });
     }
 
-    private ReportDetailModel CreateReportDetail(List<ReportRecordModel> reportRecords)
+    private static ReportDetailModel CreateReportDetail(List<ReportRecordModel> reportRecords)
     {
         return new ReportDetailModel
         {
