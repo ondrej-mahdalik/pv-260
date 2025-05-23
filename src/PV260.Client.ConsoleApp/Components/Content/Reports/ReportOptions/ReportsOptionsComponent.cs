@@ -12,8 +12,6 @@ internal class ReportsOptionsComponent(IApiClient apiClient)
 {
     private const string HeaderName = "Report Options List";
 
-    private readonly IApiClient _apiClient = apiClient;
-
     private readonly ReportOptions[] _reportOptions =
     [
         ReportOptions.GenerateNewReport,
@@ -36,10 +34,13 @@ internal class ReportsOptionsComponent(IApiClient apiClient)
         }
 
         PageStatus = new PageStatus();
+        
 
-        var delta = key == ConsoleKey.UpArrow ? -1 : 1;
-
-        SelectedIndex = (SelectedIndex + delta + _reportOptions.Length) % _reportOptions.Length;
+        SelectedIndex = key switch
+        {
+            ConsoleKey.UpArrow => (SelectedIndex - 1 + _reportOptions.Length) % _reportOptions.Length,
+            ConsoleKey.DownArrow => (SelectedIndex + 1) % _reportOptions.Length,
+        };
     }
 
     public Task<IRenderable> RenderAsync()
@@ -80,7 +81,7 @@ internal class ReportsOptionsComponent(IApiClient apiClient)
                 break;
 
             case ReportOptions.ListReports:
-                navigationService.Push(new ReportListComponent(_apiClient));
+                navigationService.Push(new ReportListComponent(apiClient));
                 break;
         }
     }
@@ -92,7 +93,7 @@ internal class ReportsOptionsComponent(IApiClient apiClient)
     {
         try
         {
-            await _apiClient.GenerateNewReportAsync();
+            await apiClient.GenerateNewReportAsync();
 
             PageStatus = new PageStatus
             {

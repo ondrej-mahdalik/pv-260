@@ -4,7 +4,6 @@ internal enum EmailOptions
 {
     ListEmailRecipients,
     AddEmailRecipient,
-    RemoveEmailRecipient,
     ClearEmailRecipients
 }
 
@@ -16,8 +15,7 @@ internal static class EmailOptionsExtensions
         {
             EmailOptions.AddEmailRecipient => "Add Recipient",
             EmailOptions.ListEmailRecipients => "List Recipients",
-            EmailOptions.RemoveEmailRecipient => "Remove Recipient",
-            EmailOptions.ClearEmailRecipients => "Clear All Recipients",
+            EmailOptions.ClearEmailRecipients => "Delete All Recipients",
             _ => option.ToString()
         };
     }
@@ -26,10 +24,9 @@ internal static class EmailOptionsExtensions
     {
         return option switch
         {
-            EmailOptions.AddEmailRecipient => "Adds a new email address to the list of recipients.",
-            EmailOptions.ListEmailRecipients => "Displays the list of currently added email recipients.",
-            EmailOptions.RemoveEmailRecipient => "Removes a specific email address from the recipients list.",
-            EmailOptions.ClearEmailRecipients => "Removes all email recipients at once.",
+            EmailOptions.AddEmailRecipient => "Add a new email address to the list of recipients",
+            EmailOptions.ListEmailRecipients => "View and manage email recipients",
+            EmailOptions.ClearEmailRecipients => "Remove all email recipients",
             _ => option.ToString()
         };
     }

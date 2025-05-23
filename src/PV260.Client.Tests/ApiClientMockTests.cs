@@ -9,15 +9,10 @@ public class ApiClientMockTests
     [Fact]
     public async Task GetAllReportsAsync_ReturnsEmptyList_Initially()
     {
-        var paginationCursor = new PaginationCursor
-        {
-            PageSize = 10,
-        };
+        var reports = await _apiClient.GetAllReportsAsync();
 
-        var paginatedReports = await _apiClient.GetAllReportsAsync(paginationCursor);
-
-        Assert.False(paginatedReports.IsError);
-        Assert.Empty(paginatedReports.Value.Items);
+        Assert.False(reports.IsError);
+        Assert.Empty(reports.Value);
     }
 
     [Fact]
@@ -68,16 +63,11 @@ public class ApiClientMockTests
     [Fact]
     public async Task DeleteAllReportsAsync_ClearsAllReports()
     {
-        var paginationCursor = new PaginationCursor
-        {
-            PageSize = 10,
-        };
-
         await _apiClient.GenerateNewReportAsync();
         await _apiClient.GenerateNewReportAsync();
         await _apiClient.DeleteAllReportsAsync();
-        var paginatedReports = await _apiClient.GetAllReportsAsync(paginationCursor);
-        Assert.Empty(paginatedReports.Value.Items);
+        var response = await _apiClient.GetAllReportsAsync();
+        Assert.Empty(response.Value);
     }
 
     [Fact]
@@ -92,14 +82,9 @@ public class ApiClientMockTests
     public async Task GetAllEmailsAsync_ReturnsAllEmails()
     {
         // Act
-        var paginationCursor = new PaginationCursor
-        {
-            PageSize = 10,
-        };
+        var emails = await _apiClient.GetAllEmailsAsync();
 
-        var paginatedEmails = await _apiClient.GetAllEmailsAsync(paginationCursor);
-
-        Assert.Empty(paginatedEmails.Value.Items);
+        Assert.Empty(emails.Value);
 
         var emailRecipient = new EmailRecipientModel
         {
@@ -109,23 +94,18 @@ public class ApiClientMockTests
 
         await _apiClient.AddEmailAsync(emailRecipient);
 
-        paginatedEmails = await _apiClient.GetAllEmailsAsync(paginationCursor);
+        emails = await _apiClient.GetAllEmailsAsync();
 
         // Assert
-        Assert.Single(paginatedEmails.Value.Items);
+        Assert.Single(emails.Value);
 
-        Assert.Equal("test@example.com", paginatedEmails.Value.Items.First().EmailAddress);
+        Assert.Equal("test@example.com", emails.Value.First().EmailAddress);
     }
 
     [Fact]
     public async Task AddEmailAsync_AddsEmail()
     {
         // Arrange
-        var paginationCursor = new PaginationCursor
-        {
-            PageSize = 10,
-        };
-
         var emailRecipient = new EmailRecipientModel
         {
             EmailAddress = "test@example.com",
@@ -136,19 +116,14 @@ public class ApiClientMockTests
         await _apiClient.AddEmailAsync(emailRecipient);
 
         // Assert
-        var paginatedEmails = await _apiClient.GetAllEmailsAsync(paginationCursor);
-        Assert.Contains(paginatedEmails.Value.Items, e => e.EmailAddress == "test@example.com");
+        var paginatedEmails = await _apiClient.GetAllEmailsAsync();
+        Assert.Contains(paginatedEmails.Value, e => e.EmailAddress == "test@example.com");
     }
 
     [Fact]
     public async Task DeleteEmailAsync_RemovesSpecificEmail()
     {
         // Arrange
-        var paginationCursor = new PaginationCursor
-        {
-            PageSize = 10,
-        };
-
         var emailRecipient = new EmailRecipientModel
         {
             EmailAddress = "test@example.com",
@@ -161,19 +136,14 @@ public class ApiClientMockTests
         await _apiClient.DeleteEmailAsync("test@example.com");
 
         // Assert
-        var paginatedEmails = await _apiClient.GetAllEmailsAsync(paginationCursor);
-        Assert.DoesNotContain(paginatedEmails.Value.Items, e => e.EmailAddress == "test@example.com");
+        var paginatedEmails = await _apiClient.GetAllEmailsAsync();
+        Assert.DoesNotContain(paginatedEmails.Value, e => e.EmailAddress == "test@example.com");
     }
 
     [Fact]
     public async Task DeleteAllEmailsAsync_RemovesAllEmails()
     {
         // Arrange
-        var paginationCursor = new PaginationCursor
-        {
-            PageSize = 10,
-        };
-
         var emailRecipient1 = new EmailRecipientModel
         {
             EmailAddress = "test1@example.com",
@@ -193,8 +163,8 @@ public class ApiClientMockTests
         await _apiClient.DeleteAllEmailsAsync();
 
         // Assert
-        var paginatedEmails = await _apiClient.GetAllEmailsAsync(paginationCursor);
+        var paginatedEmails = await _apiClient.GetAllEmailsAsync();
 
-        Assert.Empty(paginatedEmails.Value.Items);
+        Assert.Empty(paginatedEmails.Value);
     }
 }

@@ -87,19 +87,14 @@ public class ApiClientResilienceTests
     
     private class Given(ApiClient apiClient, Mock<HttpMessageHandler> httpMessageHandlerMock)
     {
-        private readonly PaginatedResponse<ReportListModel> _expectedReports = new()
-        {
-            Items = new List<ReportListModel>
+        private readonly List<ReportListModel> _expectedReports =
+        [
+            new()
             {
-                new()
-                {
-                    Name = "Test",
-                    CreatedAt = new DateTime(2025, 4, 9, 12, 36, 22)
-                }
-            },
-            PageSize = 10,
-            TotalCount = 1
-        };
+                Name = "Test",
+                CreatedAt = new DateTime(2025, 4, 9, 12, 36, 22)
+            }
+        ];
 
         private readonly Counter _requestCount = new(0);
 
@@ -155,19 +150,14 @@ public class ApiClientResilienceTests
         }
     }
 
-    private class When(ApiClient apiClient, PaginatedResponse<ReportListModel> expectedReports, Counter requestCount)
+    private class When(ApiClient apiClient, List<ReportListModel> expectedReports, Counter requestCount)
     {
-        private PaginatedResponse<ReportListModel>? _actualReports;
+        private List<ReportListModel>? _actualReports;
         private readonly List<Error> _errors = [];
         
         public When ITryToGetAllReports()
         {
-            var paginationCursor = new PaginationCursor
-            {
-                PageSize = 10,
-            };
-            
-            var response = apiClient.GetAllReportsAsync(paginationCursor).Result;
+            var response = apiClient.GetAllReportsAsync().Result;
             _actualReports = response.Value;
             if (response.IsError)
             {
@@ -183,7 +173,7 @@ public class ApiClientResilienceTests
         }
     }
 
-    private class Then(PaginatedResponse<ReportListModel> expectedReports, PaginatedResponse<ReportListModel>? actualReports, List<Error> errors, Counter requestCount)
+    private class Then(List<ReportListModel> expectedReports, List<ReportListModel>? actualReports, List<Error> errors, Counter requestCount)
     {
         public Then NoErrorsOccured()
         {

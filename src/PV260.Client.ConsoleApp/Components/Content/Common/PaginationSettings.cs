@@ -22,8 +22,8 @@ internal readonly struct PaginationSettings
 
     public static int CalculateRecordsPerPage()
     {
-        const int headerHeight = 10;
-        const double rowsPerRecord = 3.0;
+        const int headerHeight = 14;
+        const double rowsPerRecord = 2;
 
         var terminalHeight = AnsiConsole.Profile.Height;
         var usableHeight = terminalHeight - headerHeight;

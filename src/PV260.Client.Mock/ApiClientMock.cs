@@ -11,24 +11,19 @@ public class ApiClientMock : IApiClient
     private readonly Random _random = new();
     private const int DelayTime = 50;
 
-    public async Task<ErrorOr<PaginatedResponse<ReportListModel>>> GetAllReportsAsync(PaginationCursor paginationCursor)
+    public async Task<ErrorOr<List<ReportListModel>>> GetAllReportsAsync()
     {
-        var paginatedReports = new PaginatedResponse<ReportListModel>
-        {
-            Items = _reports.Select(r => new ReportListModel
+        // Simulate network delay
+        await Task.Delay(DelayTime);
+
+        return _reports
+            .Select(r => new ReportListModel
             {
                 Id = r.Id,
                 CreatedAt = r.CreatedAt,
                 Name = r.Name
-            }).Take(paginationCursor.PageSize).ToList(),
-            PageSize = 10,
-            TotalCount = _reports.Count
-        };
-        
-        // Simulate network delay
-        await Task.Delay(DelayTime);
-
-        return paginatedReports;
+            })
+            .ToList();
     }
 
     public async Task<ErrorOr<ReportDetailModel?>> GetReportByIdAsync(Guid id)
@@ -152,19 +147,12 @@ public class ApiClientMock : IApiClient
         return new Success();
     }
 
-    public async Task<ErrorOr<PaginatedResponse<EmailRecipientModel>>> GetAllEmailsAsync(PaginationCursor paginationCursor)
+    public async Task<ErrorOr<List<EmailRecipientModel>>> GetAllEmailsAsync()
     {
-        var paginatedEmails = new PaginatedResponse<EmailRecipientModel>
-        {
-            Items = _emailRecipients.Take(paginationCursor.PageSize).ToList(),
-            PageSize = 10,
-            TotalCount = 10
-        };
-        
         // Simulate network delay
         await Task.Delay(DelayTime);
 
-        return paginatedEmails;
+        return _emailRecipients;
     }
 
     public async Task<ErrorOr<Created>> AddEmailAsync(EmailRecipientModel emailRecipient)

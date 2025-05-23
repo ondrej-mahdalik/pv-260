@@ -7,7 +7,7 @@ using Spectre.Console.Rendering;
 
 namespace PV260.Client.ConsoleApp.Components.Content.Emails.EmailOptions;
 
-internal class EmailsOptionsComponent(IApiClient apiClient) : INavigationComponent
+internal class EmailsOptionsComponent(IApiClient apiClient) : IAsyncNavigationComponent
 {
     private const string HeaderName = "Report Options List";
 
@@ -15,7 +15,6 @@ internal class EmailsOptionsComponent(IApiClient apiClient) : INavigationCompone
     [
         EmailOptions.ListEmailRecipients,
         EmailOptions.AddEmailRecipient,
-        EmailOptions.RemoveEmailRecipient,
         EmailOptions.ClearEmailRecipients
     ];
 
@@ -35,11 +34,11 @@ internal class EmailsOptionsComponent(IApiClient apiClient) : INavigationCompone
         };
     }
 
-    public void HandleInput(ConsoleKey key, INavigationService navigationService)
+    public Task HandleInputAsync(ConsoleKey key, INavigationService navigationService)
     {
         if (key != ConsoleKey.Enter)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var selectedOption = _emailOptions[SelectedIndex];
@@ -48,20 +47,24 @@ internal class EmailsOptionsComponent(IApiClient apiClient) : INavigationCompone
         {
             EmailOptions.ListEmailRecipients => new EmailListComponent(apiClient),
             EmailOptions.AddEmailRecipient => new EmailAddComponent(apiClient, navigationService),
-            EmailOptions.RemoveEmailRecipient => new EmailRemoveComponent(apiClient, navigationService),
             EmailOptions.ClearEmailRecipients => new EmailClearComponent(apiClient, navigationService),
             _ => new EmailListComponent(apiClient)
         };
 
         navigationService.Push(emailContentComponent);
+        
+        return Task.CompletedTask;
     }
     
     public IRenderable Render()
+        => throw new NotSupportedException();
+
+    public Task<IRenderable> RenderAsync()
     {
         var emailOptionPanelBuilder = new EmailOptionPanelBuilder()
             .WithHeader(HeaderName)
             .WithList(_emailOptions, SelectedIndex);
 
-        return emailOptionPanelBuilder.Build();
+        return Task.FromResult(emailOptionPanelBuilder.Build());
     }
 }
