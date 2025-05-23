@@ -1,9 +1,9 @@
 ﻿using PV260.API.DAL;
-using PV260.API.Tests.Factories;
-using PV260.API.Tests.Seeds;
+using PV260.API.IntegrationTests.Factories;
+using PV260.API.IntegrationTests.Seeds;
 using Testcontainers.MsSql;
 
-namespace PV260.API.Tests.DbContextTests;
+namespace PV260.API.IntegrationTests.DbContextTests;
 
 public abstract class DbContextTestBase : IAsyncLifetime
 {

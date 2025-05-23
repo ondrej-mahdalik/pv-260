@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Moq;
 using PV260.API.DAL.Entities;
-using PV260.API.Tests.Seeds;
+using PV260.API.IntegrationTests.Seeds;
 using PV260.Common.Models;
 using PV260.Tests.Common;
 
-namespace PV260.API.Tests.FacadeTests;
+namespace PV260.API.IntegrationTests.FacadeTests;
 
 [Collection("ReportFacadeTests")]
 public class ReportFacadeTests : FacadeTestBase

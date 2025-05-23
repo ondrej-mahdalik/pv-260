@@ -2,8 +2,6 @@
 using PV260.API.BL.Mappers;
 using PV260.API.DAL.Entities;
 using PV260.API.DAL.UnitOfWork;
-using PV260.API.Tests.Factories;
-using PV260.API.Tests.Seeds;
 using PV260.Common.Models;
 using Testcontainers.MsSql;
 using Microsoft.Extensions.Options;
@@ -12,9 +10,11 @@ using PV260.API.BL.Facades;
 using PV260.API.BL.Options;
 using PV260.API.BL.Services;
 using PV260.API.Infrastructure.Services;
+using PV260.API.IntegrationTests.Factories;
+using PV260.API.IntegrationTests.Seeds;
 using PV260.API.Presentation.Facades;
 
-namespace PV260.API.Tests.FacadeTests;
+namespace PV260.API.IntegrationTests.FacadeTests;
 
 public abstract class FacadeTestBase : IAsyncLifetime
 {
