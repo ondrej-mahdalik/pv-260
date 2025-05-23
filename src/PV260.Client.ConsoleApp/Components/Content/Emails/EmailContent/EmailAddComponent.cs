@@ -14,38 +14,29 @@ internal class EmailAddComponent(
 {
     private const string HeaderName = "Email creation";
 
-    private readonly IApiClient _apiClient = apiClient;
-    private readonly INavigationService _navigationService = navigationService;
-
     public bool IsInSubMenu => false;
 
     public async Task<IRenderable> RenderAsync()
     {
-        try
+        navigationService.Pop();
+
+        AnsiConsole.Clear();
+        var emailAddress = AnsiConsole.Prompt(
+            new TextPrompt<string>("[bold green]Enter the email address to add:[/]").Validate(email =>
+                EmailHelper.IsValidEmail(email) switch
+                {
+                    true => ValidationResult.Success(),
+                    false => ValidationResult.Error("The email is invalid, please try again")
+                }));
+
+        var emailRecipient = new EmailRecipientModel
         {
-            AnsiConsole.Clear();
-            var emailAddress = AnsiConsole.Prompt(
-                new TextPrompt<string>("[bold green]Enter the email address to add:[/]").Validate(email =>
-                    EmailHelper.IsValidEmail(email) switch
-                    {
-                        true => ValidationResult.Success(),
-                        false => ValidationResult.Error("The email is invalid, please try again")
-                    }));
+            EmailAddress = emailAddress,
+            CreatedAt = DateTime.UtcNow
+        };
 
-            var emailRecipient = new EmailRecipientModel
-            {
-                EmailAddress = emailAddress,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _apiClient.AddEmailAsync(emailRecipient);
-
-            return new EmailContentPanelBuilder()
-                .WithHeader(HeaderName)
-                .WithSuccess($"Email address '{emailAddress}' has been added successfully!", MessageSize.TableRow)
-                .Build();
-        }
-        catch (Exception)
+        var addEmailResult = await apiClient.AddEmailAsync(emailRecipient);
+        if (addEmailResult.IsError)
         {
             return new EmailContentPanelBuilder()
                 .WithHeader(HeaderName)
@@ -53,10 +44,11 @@ internal class EmailAddComponent(
                     MessageSize.TableRow)
                 .Build();
         }
-        finally
-        {
-            _navigationService.Pop();
-        }
+
+        return new EmailContentPanelBuilder()
+            .WithHeader(HeaderName)
+            .WithSuccess($"Email address '{emailAddress}' has been added successfully!", MessageSize.TableRow)
+            .Build();
     }
 
     public Task HandleInputAsync(ConsoleKeyInfo key)

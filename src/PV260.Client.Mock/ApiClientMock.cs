@@ -1,4 +1,5 @@
-﻿using PV260.Client.BL;
+﻿using ErrorOr;
+using PV260.Client.BL;
 using PV260.Common.Models;
 
 namespace PV260.Client.Mock;
@@ -8,8 +9,9 @@ public class ApiClientMock : IApiClient
     private readonly List<ReportDetailModel> _reports = [];
     private readonly List<EmailRecipientModel> _emailRecipients = [];
     private readonly Random _random = new();
+    private const int DelayTime = 50;
 
-    public Task<PaginatedResponse<ReportListModel>> GetAllReportsAsync(PaginationCursor paginationCursor)
+    public async Task<ErrorOr<PaginatedResponse<ReportListModel>>> GetAllReportsAsync(PaginationCursor paginationCursor)
     {
         var paginatedReports = new PaginatedResponse<ReportListModel>
         {
@@ -20,25 +22,36 @@ public class ApiClientMock : IApiClient
                 Name = r.Name
             }).Take(paginationCursor.PageSize).ToList(),
             PageSize = 10,
-            TotalCount = 10
+            TotalCount = _reports.Count
         };
+        
+        // Simulate network delay
+        await Task.Delay(DelayTime);
 
-        return Task.FromResult(paginatedReports);
+        return paginatedReports;
     }
 
-    public Task<ReportDetailModel?> GetReportByIdAsync(Guid id)
+    public async Task<ErrorOr<ReportDetailModel?>> GetReportByIdAsync(Guid id)
     {
         var report = _reports.FirstOrDefault(r => r.Id == id);
-        return Task.FromResult(report);
+        
+        // Simulate network delay
+        await Task.Delay(DelayTime);
+        
+        return report;
     }
 
-    public Task<ReportDetailModel?> GetLatestReportAsync()
+    public async Task<ErrorOr<ReportDetailModel?>> GetLatestReportAsync()
     {
         var report = _reports.OrderByDescending(r => r.CreatedAt).FirstOrDefault();
-        return Task.FromResult(report);
+        
+        // Simulate network delay
+        await Task.Delay(DelayTime);
+        
+        return report;
     }
 
-    public Task<ReportDetailModel> GenerateNewReportAsync()
+    public async Task<ErrorOr<ReportDetailModel>> GenerateNewReportAsync()
     {
         var now = DateTime.UtcNow;
         var newReport = new ReportDetailModel 
@@ -49,7 +62,11 @@ public class ApiClientMock : IApiClient
             Records = GenerateMockRecords()
         };
         _reports.Add(newReport);
-        return Task.FromResult(newReport);
+        
+        // Simulate network delay
+        await Task.Delay(DelayTime);
+        
+        return newReport;
     }
 
     private List<ReportRecordModel> GenerateMockRecords()
@@ -103,30 +120,39 @@ public class ApiClientMock : IApiClient
         return records;
     }
 
-    public Task DeleteReportAsync(Guid id)
+    public async Task<ErrorOr<Deleted>> DeleteReportAsync(Guid id)
     {
         var report = _reports.FirstOrDefault(r => r.Id == id);
         if (report != null)
         {
             _reports.Remove(report);
         }
+        
+        // Simulate network delay
+        await Task.Delay(DelayTime);
 
-        return Task.CompletedTask;
+        return new Deleted();
     }
 
-    public Task DeleteAllReportsAsync()
+    public async Task<ErrorOr<Deleted>> DeleteAllReportsAsync()
     {
         _reports.Clear();
-        return Task.CompletedTask;
+        
+        // Simulate network delay
+        await Task.Delay(DelayTime);
+        
+        return new Deleted();
     }
 
-    public Task SendReportAsync(Guid id)
+    public async Task<ErrorOr<Success>> SendReportAsync(Guid id)
     {
-        Task.Delay(2000);
-        return Task.CompletedTask;
+        // Simulate network delay
+        await Task.Delay(DelayTime);
+        
+        return new Success();
     }
 
-    public Task<PaginatedResponse<EmailRecipientModel>> GetAllEmailsAsync(PaginationCursor paginationCursor)
+    public async Task<ErrorOr<PaginatedResponse<EmailRecipientModel>>> GetAllEmailsAsync(PaginationCursor paginationCursor)
     {
         var paginatedEmails = new PaginatedResponse<EmailRecipientModel>
         {
@@ -134,29 +160,44 @@ public class ApiClientMock : IApiClient
             PageSize = 10,
             TotalCount = 10
         };
+        
+        // Simulate network delay
+        await Task.Delay(DelayTime);
 
-        return Task.FromResult(paginatedEmails);
+        return paginatedEmails;
     }
 
-    public Task AddEmailAsync(EmailRecipientModel emailRecipient)
+    public async Task<ErrorOr<Created>> AddEmailAsync(EmailRecipientModel emailRecipient)
     {
         _emailRecipients.Add(emailRecipient);
-        return Task.CompletedTask;
+        
+        // Simulate network delay
+        await Task.Delay(DelayTime);
+        
+        return new Created();
     }
 
-    public Task DeleteEmailAsync(string email)
+    public async Task<ErrorOr<Deleted>> DeleteEmailAsync(string email)
     {
         var recipient = _emailRecipients.FirstOrDefault(r => r.EmailAddress == email);
         if (recipient != null)
         {
             _emailRecipients.Remove(recipient);
         }
-        return Task.CompletedTask;
+        
+        // Simulate network delay
+        await Task.Delay(DelayTime);
+        
+        return new Deleted();
     }
 
-    public Task DeleteAllEmailsAsync()
+    public async Task<ErrorOr<Deleted>> DeleteAllEmailsAsync()
     {
         _emailRecipients.Clear();
-        return Task.CompletedTask;
+        
+        // Simulate network delay
+        await Task.Delay(DelayTime);
+        
+        return new Deleted();
     }
 }

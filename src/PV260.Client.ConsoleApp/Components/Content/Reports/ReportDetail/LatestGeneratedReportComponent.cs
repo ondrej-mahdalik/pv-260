@@ -1,4 +1,5 @@
-﻿using PV260.Client.BL;
+﻿using ErrorOr;
+using PV260.Client.BL;
 using PV260.Common.Models;
 
 namespace PV260.Client.ConsoleApp.Components.Content.Reports.ReportDetail;
@@ -8,11 +9,11 @@ internal class LatestGeneratedReportComponent(IApiClient apiClient)
 {
     private ReportDetailModel? _latestReport;
 
-    protected override async Task<ReportDetailModel?> GetReportAsync()
+    protected override async Task<ErrorOr<ReportDetailModel?>> GetReportAsync()
     {
-        _latestReport = await ApiClient.GetLatestReportAsync();
-
-        return _latestReport;
+        var report = await ApiClient.GetLatestReportAsync();
+        _latestReport = report.IsError ? null : report.Value;
+        return report;
     }
 
     protected override string GetHeader()
