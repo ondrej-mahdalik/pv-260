@@ -12,7 +12,7 @@ public interface IApiClient
     /// Retrieves all reports.
     /// </summary>
     /// <returns>A collection of <see cref="ReportListModel"/>.</returns>
-    Task<ErrorOr<PaginatedResponse<ReportListModel>>> GetAllReportsAsync(PaginationCursor paginationCursor);
+    Task<ErrorOr<List<ReportListModel>>> GetAllReportsAsync();
 
     /// <summary>
     /// Retrieves a specific report by its unique identifier.
@@ -54,7 +54,7 @@ public interface IApiClient
     /// Retrieves all email recipients.
     /// </summary>
     /// <returns>A collection of <see cref="EmailRecipientModel"/>.</returns>
-    Task<ErrorOr<PaginatedResponse<EmailRecipientModel>>> GetAllEmailsAsync(PaginationCursor paginationCursor);
+    Task<ErrorOr<List<EmailRecipientModel>>> GetAllEmailsAsync();
 
     /// <summary>
     /// Adds a new email recipient.

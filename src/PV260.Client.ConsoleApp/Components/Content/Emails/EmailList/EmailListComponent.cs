@@ -11,8 +11,7 @@ internal class EmailListComponent(IApiClient apiClient) : IAsyncNavigationCompon
 {
     private const string HeaderName = "Email recipients List";
 
-    private readonly ListPageInformation<EmailRecipientModel> _pageInfo = new();
-    private PaginatedResponse<EmailRecipientModel>? _emails;
+    private List<EmailRecipientModel>? _emails;
 
     public int SelectedIndex { get; private set; }
     public string[] NavigationItems { get; private set; } = [];
@@ -20,77 +19,55 @@ internal class EmailListComponent(IApiClient apiClient) : IAsyncNavigationCompon
 
     public void Navigate(ConsoleKey key)
     {
-        if (NavigationItems.Length == 0) return;
-
+        if (_emails == null || _emails.Count == 0)
+            return;
+        
         switch (key)
         {
             case ConsoleKey.UpArrow:
-                SelectedIndex = (SelectedIndex - 1 + NavigationItems.Length) % NavigationItems.Length;
-                _pageInfo.SelectedPageIndex = 0;
+                SelectedIndex--;
+                if (SelectedIndex < 0)
+                    SelectedIndex = _emails.Count - 1;
                 break;
             case ConsoleKey.DownArrow:
-                SelectedIndex = (SelectedIndex + 1) % NavigationItems.Length;
-                _pageInfo.SelectedPageIndex = 0;
+                SelectedIndex = (SelectedIndex + 1) % _emails.Count;
                 break;
         }
-
-        if (SelectedIndex == 0) _pageInfo.ListPageStack.ClearStack();
-        if (key == ConsoleKey.UpArrow) _pageInfo.ListPageStack.PopModel();
     }
 
     public async Task<IRenderable> RenderAsync()
     {
         if (_emails == null)
         {
-            var cursor = new PaginationCursor
-            {
-                PageSize = PaginationSettings.CalculateRecordsPerPage(),
-                LastCreatedAt = _pageInfo.ListPageStack.Model?.CreatedAt,
-                LastId = _pageInfo.ListPageStack.Model?.CreatedAt is null ? null : Guid.Empty
-            };
-
-            var response = await apiClient.GetAllEmailsAsync(cursor);
+            var response = await apiClient.GetAllEmailsAsync();
             if (response.IsError)
                 return BuildErrorPanel("There was an error getting email recipients. Please try again");
 
             _emails = response.Value;
         }
 
-        if (!_emails.Items.Any())
+        if (_emails.Count == 0)
             return BuildMessagePanel("There are no email recipients to display.");
 
-        UpdatePaging(_emails.TotalCount);
-        _pageInfo.PageSize = _emails.Items.Count;
-        _pageInfo.SelectedModel = _emails.Items[_pageInfo.SelectedPageIndex];
-        _pageInfo.ListPageStack.PushModel(_emails.Items.Last());
+        var amountToShow = PaginationSettings.CalculateRecordsPerPage();
 
         return new EmailOptionPanelBuilder()
             .WithHeader(HeaderName)
-            .WithList(_emails.Items, _pageInfo.SelectedPageIndex)
-            .WithMessage("Use <- and -> to navigate between records on page", MessageSize.TableRow)
+            .WithList(_emails.OrderByDescending(x => x.CreatedAt).Take(amountToShow), SelectedIndex)
+            .WithMessage("Press 'Delete' to remove the selected email recipient.", MessageSize.TableRow)
             .Build();
     }
 
-    public Task HandleInputAsync(ConsoleKey key, INavigationService navigationService)
+    public async Task HandleInputAsync(ConsoleKey key, INavigationService navigationService)
     {
-        _pageInfo.SelectedPageIndex = key switch
-        {
-            ConsoleKey.LeftArrow => (_pageInfo.SelectedPageIndex - 1 + _pageInfo.PageSize) % _pageInfo.PageSize,
-            ConsoleKey.RightArrow => (_pageInfo.SelectedPageIndex + 1) % _pageInfo.PageSize,
-            _ => _pageInfo.SelectedPageIndex
-        };
-
-        return Task.CompletedTask;
+        if (key != ConsoleKey.Delete || _emails == null || SelectedIndex >= _emails.Count)
+            return;
+        
+        var email = _emails[SelectedIndex];
+        await apiClient.DeleteEmailAsync(email.EmailAddress);
     }
 
     public IRenderable Render() => throw new NotSupportedException();
-
-    private void UpdatePaging(int recordCount)
-    {
-        NavigationItems = Enumerable.Range(1, PaginationSettings.CalculatePagination(recordCount).NumberOfPages)
-            .Select(i => $"Page {i}")
-            .ToArray();
-    }
 
     private static IRenderable BuildErrorPanel(string message) =>
         new EmailOptionPanelBuilder()

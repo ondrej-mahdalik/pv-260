@@ -17,24 +17,17 @@ public class ApiClient(HttpClient httpClient, ResiliencePipelineProvider<string>
     private readonly ResiliencePipeline _pipeline = pipelineProvider.GetPipeline(DefaultApiClientPipeline);
 
     /// <inheritdoc />
-    public Task<ErrorOr<PaginatedResponse<ReportListModel>>> GetAllReportsAsync(PaginationCursor paginationCursor)
+    public Task<ErrorOr<List<ReportListModel>>> GetAllReportsAsync()
         => ExecuteWithErrorHandlingAsync(async () =>
         {
-            var url = BuildUrlWithCursor("Report", paginationCursor);
-
-            return await _pipeline.ExecuteAsync<PaginatedResponse<ReportListModel>>(async cancellationToken =>
+            return await _pipeline.ExecuteAsync<List<ReportListModel>>(async cancellationToken =>
             {
-                var response = await httpClient.GetAsync(url, cancellationToken);
+                var response = await httpClient.GetAsync("Report", cancellationToken);
                 response.EnsureSuccessStatusCode();
 
-                return await response.Content.ReadFromJsonAsync<PaginatedResponse<ReportListModel>>(
+                return await response.Content.ReadFromJsonAsync<List<ReportListModel>>(
                            cancellationToken: cancellationToken)
-                       ?? new PaginatedResponse<ReportListModel>
-                       {
-                           Items = [],
-                           PageSize = 0,
-                           TotalCount = 0
-                       };
+                       ?? [];
             });
         });
 
@@ -122,24 +115,16 @@ public class ApiClient(HttpClient httpClient, ResiliencePipelineProvider<string>
         });
 
     /// <inheritdoc />
-    public Task<ErrorOr<PaginatedResponse<EmailRecipientModel>>> GetAllEmailsAsync(PaginationCursor paginationCursor)
+    public Task<ErrorOr<List<EmailRecipientModel>>> GetAllEmailsAsync()
         => ExecuteWithErrorHandlingAsync(async () =>
         {
-            var url = BuildUrlWithCursor("Email", paginationCursor);
-
-            return await _pipeline.ExecuteAsync<PaginatedResponse<EmailRecipientModel>>(async cancellationToken =>
+            return await _pipeline.ExecuteAsync<List<EmailRecipientModel>>(async cancellationToken =>
             {
-                var response = await httpClient.GetAsync(url, cancellationToken);
+                var response = await httpClient.GetAsync("Email", cancellationToken);
                 response.EnsureSuccessStatusCode();
 
-                return await response.Content.ReadFromJsonAsync<PaginatedResponse<EmailRecipientModel>>(
-                           cancellationToken: cancellationToken) ??
-                       new PaginatedResponse<EmailRecipientModel>
-                       {
-                           Items = [],
-                           PageSize = 0,
-                           TotalCount = 0
-                       };
+                return await response.Content.ReadFromJsonAsync<List<EmailRecipientModel>>(cancellationToken)
+                       ?? [];
             });
         });
 

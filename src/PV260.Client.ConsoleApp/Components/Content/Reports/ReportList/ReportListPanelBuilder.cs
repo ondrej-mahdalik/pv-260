@@ -3,6 +3,7 @@ using PV260.Client.ConsoleApp.Components.Content.Common;
 using PV260.Common.Models;
 using Spectre.Console;
 using Spectre.Console.Rendering;
+using Terminal.Gui;
 
 namespace PV260.Client.ConsoleApp.Components.Content.Reports.ReportList;
 

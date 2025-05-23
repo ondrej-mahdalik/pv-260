@@ -12,8 +12,7 @@ internal class ReportListComponent(IApiClient apiClient) : IAsyncNavigationCompo
 {
     private const string HeaderName = "Reports List";
 
-    private readonly ListPageInformation<ReportListModel> _pageInfo = new();
-    private PaginatedResponse<ReportListModel>? _reports;
+    public List<ReportListModel>? Reports;
 
     public int SelectedIndex { get; private set; }
     public string[] NavigationItems { get; private set; } = [];
@@ -21,85 +20,57 @@ internal class ReportListComponent(IApiClient apiClient) : IAsyncNavigationCompo
 
     public void Navigate(ConsoleKey key)
     {
-        if (NavigationItems.Length == 0) return;
-
+        if (Reports == null || Reports.Count == 0)
+            return;
+        
         switch (key)
         {
             case ConsoleKey.UpArrow:
-                SelectedIndex = (SelectedIndex - 1 + NavigationItems.Length) % NavigationItems.Length;
-                _pageInfo.SelectedPageIndex = 0;
+                SelectedIndex--;
+                if (SelectedIndex < 0)
+                    SelectedIndex = Reports.Count - 1;
                 break;
             case ConsoleKey.DownArrow:
-                SelectedIndex = (SelectedIndex + 1) % NavigationItems.Length;
-                _pageInfo.SelectedPageIndex = 0;
+                SelectedIndex = (SelectedIndex + 1) % Reports.Count;
                 break;
         }
-
-        if (SelectedIndex == 0) _pageInfo.ListPageStack.ClearStack();
-        if (key == ConsoleKey.UpArrow) _pageInfo.ListPageStack.PopModel();
     }
 
     public async Task<IRenderable> RenderAsync()
     {
-        if (_reports == null)
+        if (Reports == null)
         {
-            var cursor = new PaginationCursor
-            {
-                PageSize = PaginationSettings.CalculateRecordsPerPage(),
-                LastCreatedAt = _pageInfo.ListPageStack.Model?.CreatedAt,
-                LastId = _pageInfo.ListPageStack.Model?.Id
-            };
-
-            var response = await apiClient.GetAllReportsAsync(cursor);
+            var response = await apiClient.GetAllReportsAsync();
             if (response.IsError)
                 return BuildErrorPanel("There was an error getting reports. Please try again");
 
-            _reports = response.Value;
+            Reports = response.Value;
         }
 
-        if (!_reports.Items.Any())
+        if (Reports.Count == 0)
             return BuildMessagePanel("There are no reports to display.");
 
-        UpdatePaging(_reports.TotalCount);
-        _pageInfo.PageSize = _reports.Items.Count;
-        _pageInfo.SelectedModel = _reports.Items[_pageInfo.SelectedPageIndex];
-
-        if (_pageInfo.PageSize == PaginationSettings.CalculateRecordsPerPage())
-            _pageInfo.ListPageStack.PushModel(_reports.Items.Last());
+        var amountToShow = PaginationSettings.CalculateRecordsPerPage();
 
         return new ReportOptionPanelBuilder()
             .WithHeader(HeaderName)
-            .WithList(_reports.Items, _pageInfo.SelectedPageIndex)
-            .WithMessage("Use <- and -> to navigate between records on page", MessageSize.TableRow)
+            .WithList(Reports.OrderByDescending(x => x.CreatedAt).Take(amountToShow), SelectedIndex)
+            .WithMessage("Press Enter to open selected report detail.", MessageSize.TableRow)
             .Build();
     }
 
     public Task HandleInputAsync(ConsoleKey key, INavigationService navigationService)
     {
-        _pageInfo.SelectedPageIndex = key switch
-        {
-            ConsoleKey.LeftArrow => (_pageInfo.SelectedPageIndex - 1 + _pageInfo.PageSize) % _pageInfo.PageSize,
-            ConsoleKey.RightArrow => (_pageInfo.SelectedPageIndex + 1) % _pageInfo.PageSize,
-            _ => _pageInfo.SelectedPageIndex
-        };
-
-        if (key != ConsoleKey.Enter || _pageInfo.SelectedModel is null)
+        if (key != ConsoleKey.Enter || Reports == null || Reports.Count <= SelectedIndex)
             return Task.CompletedTask;
         
-        var detailComponent = new ReportDetailComponent(apiClient, _pageInfo.SelectedModel.Id);
+        var detailComponent = new ReportDetailComponent(apiClient, Reports[SelectedIndex].Id);
         navigationService.Push(detailComponent);
 
         return Task.CompletedTask;
     }
 
     public IRenderable Render() => throw new NotSupportedException();
-
-    private void UpdatePaging(int recordCount)
-    {
-        NavigationItems = Enumerable.Range(1, PaginationSettings.CalculatePagination(recordCount).NumberOfPages)
-            .Select(i => $"Page {i}")
-            .ToArray();
-    }
 
     private static IRenderable BuildErrorPanel(string message) =>
         new ReportOptionPanelBuilder()

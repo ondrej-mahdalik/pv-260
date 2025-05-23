@@ -43,22 +43,13 @@ public class ApiClientTests
     public async Task GetAllReportsAsync_ReturnsReports()
     {
         // Arrange
-        var paginationCursor = new PaginationCursor
+        var expectedReports = new List<ReportListModel>()
         {
-            PageSize = 10,
-        };
-
-        var expectedReports = new PaginatedResponse<ReportListModel>
-        {
-            Items = new List<ReportListModel>()
-            { new()
-                {
-                    Name = "Test",
-                    CreatedAt = new DateTime(2025, 4, 9, 12, 36, 22)
-                }
-            },
-            PageSize = 10,
-            TotalCount = 1
+            new()
+            {
+                Name = "Test",
+                CreatedAt = new DateTime(2025, 4, 9, 12, 36, 22)
+            }
         };
 
         _httpMessageHandlerMock.Protected()
@@ -73,11 +64,11 @@ public class ApiClientTests
             });
 
         // Act
-        var reports = await _apiClient.GetAllReportsAsync(paginationCursor);
+        var reports = await _apiClient.GetAllReportsAsync();
 
         // Assert
         Assert.False(reports.IsError);
-        Assert.Single(reports.Value.Items);
+        Assert.Single(reports.Value);
     }
 
     [Fact]
