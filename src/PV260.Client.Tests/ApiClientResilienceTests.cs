@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using ErrorOr;
 using Moq;
 using Moq.Protected;
 using Polly;
@@ -49,7 +50,7 @@ public class ApiClientResilienceTests
             .ITryToGetAllReports()
             .Then()
             .RequestWasSentOnce()
-            .NoExceptionWasThrown()
+            .NoErrorsOccured()
             .ActualReportsAreEqualToExpected();
     }
     
@@ -62,7 +63,7 @@ public class ApiClientResilienceTests
             .ITryToGetAllReports()
             .Then()
             .RequestWasSentMultipleTimes(4) // 3 retries + 1 original request
-            .ExceptionWasThrown<AggregateException>();
+            .AnErrorOccured();
     }
     
     [Fact]
@@ -74,7 +75,7 @@ public class ApiClientResilienceTests
             .ITryToGetAllReports()
             .Then()
             .RequestWasSentMultipleTimes(4) // 3 retries + 1 original request
-            .ExceptionWasThrown<AggregateException>();
+            .AnErrorOccured();
     }
 
     #region Internals
@@ -157,7 +158,7 @@ public class ApiClientResilienceTests
     private class When(ApiClient apiClient, PaginatedResponse<ReportListModel> expectedReports, Counter requestCount)
     {
         private PaginatedResponse<ReportListModel>? _actualReports;
-        private Exception? _exception;
+        private readonly List<Error> _errors = [];
         
         public When ITryToGetAllReports()
         {
@@ -165,37 +166,34 @@ public class ApiClientResilienceTests
             {
                 PageSize = 10,
             };
-
-            try
+            
+            var response = apiClient.GetAllReportsAsync(paginationCursor).Result;
+            _actualReports = response.Value;
+            if (response.IsError)
             {
-                _actualReports = apiClient.GetAllReportsAsync(paginationCursor).Result;
+                _errors.AddRange(response.Errors);
             }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
-
+            
             return this;
         }
 
         public Then Then()
         {
-            return new Then(expectedReports, _actualReports, _exception, requestCount);
+            return new Then(expectedReports, _actualReports, _errors, requestCount);
         }
     }
 
-    private class Then(PaginatedResponse<ReportListModel> expectedReports, PaginatedResponse<ReportListModel>? actualReports, Exception? exception, Counter requestCount)
+    private class Then(PaginatedResponse<ReportListModel> expectedReports, PaginatedResponse<ReportListModel>? actualReports, List<Error> errors, Counter requestCount)
     {
-        public Then NoExceptionWasThrown()
+        public Then NoErrorsOccured()
         {
-            Assert.Null(exception);
+            Assert.Empty(errors);
             return this;
         }
         
-        public Then ExceptionWasThrown<TException>()
-            where TException : Exception
+        public Then AnErrorOccured()
         {
-            Assert.IsType<TException>(exception);
+            Assert.NotEmpty(errors);
             return this;
         }
         

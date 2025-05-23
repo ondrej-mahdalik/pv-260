@@ -1,4 +1,5 @@
-﻿using PV260.Client.BL;
+﻿using ErrorOr;
+using PV260.Client.BL;
 using PV260.Client.ConsoleApp.Components.Content.Common;
 using PV260.Client.ConsoleApp.Components.Interfaces;
 using PV260.Client.ConsoleApp.Components.Navigation.Interfaces;
@@ -10,16 +11,16 @@ namespace PV260.Client.ConsoleApp.Components.Content.Reports.ReportDetail;
 internal abstract class ReportDetailComponentBase(IApiClient apiClient) : IAsyncNavigationComponent
 {
     protected readonly IApiClient ApiClient = apiClient;
-    public PageStatus? SendStatus { get; protected set; }
-    public int SelectedIndex { get; protected set; }
-    public string[] NavigationItems { get; protected set; } = [];
+    private PageStatus? SendStatus { get; set; }
+    public int SelectedIndex { get; private set; }
+    public string[] NavigationItems { get; private set; } = [];
     public bool IsInSubMenu => false;
 
     public async Task<IRenderable> RenderAsync()
     {
         var report = await GetReportAsync();
 
-        if (report is null)
+        if (report.IsError || report.Value is null)
         {
             return new ReportDetailPanelBuilder()
                 .WithHeader(GetHeader())
@@ -27,16 +28,16 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : IAsync
                 .Build();
         }
 
-        var paginationSettings = CalculateRecordsPaging(report.Records.Count);
+        var paginationSettings = CalculateRecordsPaging(report.Value.Records.Count);
 
-        var paginatedRecords = report.Records
+        var paginatedRecords = report.Value.Records
             .OrderBy(record => record.CompanyName)
             .Skip(SelectedIndex * paginationSettings.RecordsPerPage)
             .Take(paginationSettings.RecordsPerPage);
 
         var panelBuilder = new ReportDetailPanelBuilder()
             .WithHeader(GetHeader())
-            .WithSummary(report.Name, report.CreatedAt)
+            .WithSummary(report.Value.Name, report.Value.CreatedAt)
             .WithDetails(paginatedRecords);
 
         switch (SendStatus)
@@ -81,27 +82,26 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : IAsync
         {
             var report = await GetReportAsync();
 
-            if (report is null)
+            if (report.IsError || report.Value is null)
             {
                 return;
             }
-
-            try
-            {
-                await ApiClient.SendReportAsync(report.Id);
-
-                SendStatus = new PageStatus
-                {
-                    IsSuccess = true,
-                    StatusMessage = "Report sent successfully!"
-                };
-            }
-            catch (Exception)
+            
+            var result = await ApiClient.SendReportAsync(report.Value.Id);
+            if (result.IsError)
             {
                 SendStatus = new PageStatus
                 {
                     IsSuccess = false,
                     StatusMessage = "Failed to send report!"
+                };
+            }
+            else
+            {
+                SendStatus = new PageStatus
+                {
+                    IsSuccess = true,
+                    StatusMessage = "Report sent successfully!"
                 };
             }
         }
@@ -121,6 +121,6 @@ internal abstract class ReportDetailComponentBase(IApiClient apiClient) : IAsync
         return paginationSettings;
     }
 
-    protected abstract Task<ReportDetailModel?> GetReportAsync();
+    protected abstract Task<ErrorOr<ReportDetailModel?>> GetReportAsync();
     protected abstract string GetHeader();
 }

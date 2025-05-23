@@ -76,8 +76,8 @@ public class ApiClientTests
         var reports = await _apiClient.GetAllReportsAsync(paginationCursor);
 
         // Assert
-        Assert.NotNull(reports);
-        Assert.Single(reports.Items);
+        Assert.False(reports.IsError);
+        Assert.Single(reports.Value.Items);
     }
 
     [Fact]

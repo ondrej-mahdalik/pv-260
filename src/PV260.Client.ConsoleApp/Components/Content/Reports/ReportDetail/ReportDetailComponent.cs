@@ -1,4 +1,5 @@
-﻿using PV260.Client.BL;
+﻿using ErrorOr;
+using PV260.Client.BL;
 using PV260.Common.Models;
 
 namespace PV260.Client.ConsoleApp.Components.Content.Reports.ReportDetail;
@@ -9,9 +10,10 @@ internal class ReportDetailComponent(IApiClient apiClient, Guid reportId)
     private readonly Guid _reportId = reportId;
     private ReportDetailModel? _report;
 
-    protected override async Task<ReportDetailModel?> GetReportAsync()
+    protected override async Task<ErrorOr<ReportDetailModel?>> GetReportAsync()
     {
-        _report = await ApiClient.GetReportByIdAsync(_reportId);
+        var report = await ApiClient.GetReportByIdAsync(_reportId);
+        _report = report.IsError ? null : report.Value;
         return _report;
     }
 
