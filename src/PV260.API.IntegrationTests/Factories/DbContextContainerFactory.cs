@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PV260.API.DAL;
 
-namespace PV260.API.Tests.Factories;
+namespace PV260.API.IntegrationTests.Factories;
 
 public class DbContextContainerFactory(string connectionString) : IDbContextFactory<MainDbContext>
 {

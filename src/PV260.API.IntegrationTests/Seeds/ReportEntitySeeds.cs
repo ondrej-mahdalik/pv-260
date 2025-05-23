@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PV260.API.DAL.Entities;
 
-namespace PV260.API.Tests.Seeds;
+namespace PV260.API.IntegrationTests.Seeds;
 
 internal static class ReportEntitySeeds
 {
