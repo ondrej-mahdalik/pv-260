@@ -43,7 +43,7 @@ internal class EmailListComponent(IApiClient apiClient) : IAsyncNavigationCompon
             if (response.IsError)
                 return BuildErrorPanel("There was an error getting email recipients. Please try again");
 
-            _emails = response.Value;
+            _emails = response.Value.OrderByDescending(x => x.CreatedAt).ToList();
         }
 
         if (_emails.Count == 0)
@@ -53,7 +53,7 @@ internal class EmailListComponent(IApiClient apiClient) : IAsyncNavigationCompon
 
         return new EmailOptionPanelBuilder()
             .WithHeader(HeaderName)
-            .WithList(_emails.OrderByDescending(x => x.CreatedAt).Take(amountToShow), SelectedIndex)
+            .WithList(_emails.Take(amountToShow), SelectedIndex)
             .WithMessage("Press 'Delete' to remove the selected email recipient.", MessageSize.TableRow)
             .Build();
     }
