@@ -44,7 +44,7 @@ internal class ReportListComponent(IApiClient apiClient) : IAsyncNavigationCompo
             if (response.IsError)
                 return BuildErrorPanel("There was an error getting reports. Please try again");
 
-            Reports = response.Value;
+            Reports = response.Value.OrderByDescending(x => x.CreatedAt).ToList();
         }
 
         if (Reports.Count == 0)
@@ -54,7 +54,7 @@ internal class ReportListComponent(IApiClient apiClient) : IAsyncNavigationCompo
 
         return new ReportOptionPanelBuilder()
             .WithHeader(HeaderName)
-            .WithList(Reports.OrderByDescending(x => x.CreatedAt).Take(amountToShow), SelectedIndex)
+            .WithList(Reports.Take(amountToShow), SelectedIndex)
             .WithMessage("Press Enter to open selected report detail.", MessageSize.TableRow)
             .Build();
     }
