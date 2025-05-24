@@ -28,3 +28,4 @@ Furthermore, a Docker image is built for the API server, pushed to the Packages 
 
 After the release is tested on the Staging server, it can be promoted to Production by creating a new release with a version tag in the format `vX.Y.Z`,
 where X is the major version, Y is the minor version, and Z is the patch version.
+
